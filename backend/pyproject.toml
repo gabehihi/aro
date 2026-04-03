@@ -1,0 +1,42 @@
+[project]
+name = "aro-backend"
+version = "0.1.0"
+description = "aro - 보건소 AI 어시스턴트 백엔드"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.34.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "aiosqlite>=0.20.0",
+    "alembic>=1.14.0",
+    "python-jose[cryptography]>=3.4.0",
+    "bcrypt>=4.2.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.7.0",
+    "anthropic>=0.52.0",
+    "cryptography>=44.0.0",
+    "python-docx>=1.1.0",
+    "python-multipart>=0.0.20",
+    "httpx>=0.28.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=6.0.0",
+    "ruff>=0.11.0",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+ignore = ["B008"]  # FastAPI Depends() 패턴 허용
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

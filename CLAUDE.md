@@ -13,7 +13,8 @@ PRD: `docs/PRD.md` (원본: `aro-PRD-v1.1.md`)
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 18+ / TypeScript / Tailwind CSS / Vite |
+| Frontend | React 18+ / TypeScript / Tailwind CSS v4 / Vite / shadcn/ui / Recharts |
+| State Mgmt | zustand (클라이언트) / @tanstack/react-query (서버) |
 | Backend | Python 3.12+ / FastAPI |
 | Database | SQLite (v1) → PostgreSQL (확장 시) |
 | ORM | SQLAlchemy 2.0 + Alembic |
