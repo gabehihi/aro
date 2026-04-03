@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from api.v1 import router as v1_router
 from config import get_settings
-from core.database import async_session, engine
+from core import database as db_module
 from core.models import Base, User
 from core.models.enums import UserRole
 from core.security import hash_password
@@ -25,7 +25,7 @@ async def _seed_admin() -> None:
         logger.warning("INITIAL_ADMIN_PASSWORD 미설정 — admin 시딩 건너뜀")
         return
 
-    async with async_session() as session:
+    async with db_module.async_session() as session:
         result = await session.execute(select(User).limit(1))
         if result.scalar_one_or_none() is not None:
             return  # 이미 사용자 존재
@@ -46,7 +46,7 @@ async def _seed_admin() -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Startup
     logger.info("DB 테이블 생성 시작...")
-    async with engine.begin() as conn:
+    async with db_module.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("DB 테이블 생성 완료")
 
@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     yield
 
     # Shutdown
-    await engine.dispose()
+    await db_module.engine.dispose()
     logger.info("DB 연결 종료")
 
 

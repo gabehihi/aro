@@ -1,7 +1,7 @@
 from datetime import date
 from typing import TYPE_CHECKING
 
-from sqlalchemy import JSON, Boolean, Date, Enum, Index, String, Text
+from sqlalchemy import JSON, Boolean, Date, Enum, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.models.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -46,5 +46,3 @@ class Patient(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     follow_up_alerts: Mapped[list["FollowUpAlert"]] = relationship(
         "FollowUpAlert", back_populates="patient", cascade="all, delete-orphan"
     )
-
-    __table_args__ = (Index("ix_patients_chart_no", "chart_no"),)
