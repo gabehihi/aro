@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section"><h2>검진일</h2><p>{{ content.exam_date | default('') }}</p></div>
+<div class="section"><h2>검진 항목</h2><p>{{ content.exam_items | default('') }}</p></div>
+<div class="section"><h2>검진 결과</h2><p>{{ content.exam_results | default('') }}</p></div>
+<div class="section"><h2>판정</h2><p>{{ content.judgment | default('') }}</p></div>
+<div class="section"><h2>의사 소견</h2><p class="placeholder">{{ content.doctor_opinion | default('[의사 소견: ___]') }}</p></div>
+<div class="section"><h2>권고 사항</h2><p>{{ content.recommendations | default('') }}</p></div>
+{% endblock %}

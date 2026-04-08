@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section"><h2>수신 기관</h2><p>{{ content.recipient | default('') }}</p></div>
+<div class="section"><h2>진단명</h2><p>{{ content.diagnosis | default('') }}</p></div>
+<div class="section"><h2>의뢰 목적</h2><p>{{ content.referral_purpose | default('') }}</p></div>
+<div class="section"><h2>임상 소견</h2><p>{{ content.clinical_findings | default('') }}</p></div>
+<div class="section"><h2>현재 복용 약물</h2><p>{{ content.current_medications | default('') }}</p></div>
+<div class="section"><h2>요청 사항</h2><p class="placeholder">{{ content.requests | default('[요청 사항: ___]') }}</p></div>
+{% endblock %}

@@ -3,12 +3,20 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.codebook import router as codebook_router
+from api.documents import router as documents_router
+from api.encounters import router as encounters_router
+from api.patients import router as patients_router
 from core.database import get_db
 from core.models.user import User
 from core.schemas.auth import TokenResponse, UserResponse
 from core.security import create_access_token, get_current_user, verify_password
 
 router = APIRouter(prefix="/api/v1")
+router.include_router(patients_router)
+router.include_router(codebook_router)
+router.include_router(encounters_router)
+router.include_router(documents_router)
 
 
 @router.post("/auth/login", response_model=TokenResponse, summary="로그인 (JWT 발급)")

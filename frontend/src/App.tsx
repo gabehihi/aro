@@ -5,6 +5,8 @@ import { AppLayout } from "@/components/Layout/AppLayout"
 import { Login } from "@/pages/Login"
 import { Dashboard } from "@/pages/Dashboard"
 import { Placeholder } from "@/pages/Placeholder"
+import { SOAPWriter } from "@/pages/SOAPWriter"
+import { DocumentWriter } from "@/pages/DocumentWriter"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,10 +27,7 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<AppLayout />}>
               <Route index element={<Dashboard />} />
-              <Route
-                path="soap"
-                element={<Placeholder title="SOAP 작성" />}
-              />
+              <Route path="soap" element={<SOAPWriter />} />
               <Route
                 path="drugs"
                 element={<Placeholder title="약물 검토" />}
@@ -39,7 +38,7 @@ export default function App() {
               />
               <Route
                 path="documents"
-                element={<Placeholder title="문서 발급" />}
+                element={<DocumentWriter />}
               />
               <Route
                 path="patients"
