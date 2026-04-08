@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section"><h2>확인 내용</h2><p>{{ content.confirmation | default('') }}</p></div>
+<div class="section"><h2>진단명</h2><p>{{ content.diagnosis | default('') }}</p></div>
+<div class="section"><h2>진료 기간</h2><p>{{ content.treatment_period | default('') }}</p></div>
+<div class="section"><h2>용도</h2><p>{{ content.purpose | default('') }}</p></div>
+<div class="section"><h2>비고</h2><p class="placeholder">{{ content.notes | default('[비고: ___]') }}</p></div>
+{% endblock %}

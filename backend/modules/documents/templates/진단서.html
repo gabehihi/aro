@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="section"><h2>진단명</h2><p>{{ content.diagnosis | default('') }}</p></div>
+<div class="section"><h2>진단일</h2><p>{{ content.diagnosis_date | default('') }}</p></div>
+<div class="section"><h2>임상 소견</h2><p>{{ content.clinical_findings | default('') }}</p></div>
+<div class="section"><h2>의사 소견</h2><p class="placeholder">{{ content.doctor_opinion | default('[의사 소견: ___]') }}</p></div>
+<div class="section"><h2>용도</h2><p>{{ content.purpose | default('') }}</p></div>
+{% endblock %}
