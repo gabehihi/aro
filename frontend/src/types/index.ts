@@ -262,3 +262,67 @@ export interface DocumentListResponse {
   page: number
   size: number
 }
+
+// ============================================================
+// Polypharmacy (Phase 3)
+// ============================================================
+
+export interface LabInput {
+  name: string
+  value: number
+  unit?: string
+  baseline?: number
+}
+
+export interface PolypharmacyReviewRequest {
+  patient_id?: string
+  drug_inns?: string[]
+  egfr?: number
+  clinical_flags?: string[]
+  labs?: LabInput[]
+}
+
+export interface DDIFinding {
+  drug_a: string
+  drug_b: string
+  severity: "CONTRAINDICATED" | "MAJOR" | "MODERATE" | "MINOR"
+  mechanism: string
+  management: string
+  clinic_note: string | null
+  ddi_id: string | null
+}
+
+export interface RenalRecommendation {
+  drug_inn: string
+  egfr: number
+  recommendation: "FULL_DOSE" | "REDUCE" | "AVOID" | "CONTRAINDICATED" | "NOT_IN_DB"
+  detail: string
+  max_daily_dose: string | null
+  monitoring: string[]
+  source: string | null
+}
+
+export interface SickDayAlert {
+  drug_inn: string
+  action: "HOLD" | "REDUCE" | "MONITOR"
+  reason: string
+  trigger_matched: string
+  detail: string
+}
+
+export interface PolypharmacyWarning {
+  type: string
+  message: string
+  severity: "error" | "warning"
+}
+
+export interface PolypharmacyReport {
+  drug_inns: string[]
+  egfr: number | null
+  ddi_findings: DDIFinding[]
+  renal_recommendations: RenalRecommendation[]
+  sick_day_alerts: SickDayAlert[]
+  llm_summary: string
+  llm_meta: LLMMeta
+  warnings: PolypharmacyWarning[]
+}
