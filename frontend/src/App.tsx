@@ -7,6 +7,7 @@ import { Dashboard } from "@/pages/Dashboard"
 import { Placeholder } from "@/pages/Placeholder"
 import { SOAPWriter } from "@/pages/SOAPWriter"
 import { DocumentWriter } from "@/pages/DocumentWriter"
+import { PolypharmacyReview } from "@/pages/PolypharmacyReview"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,10 +29,7 @@ export default function App() {
             <Route element={<AppLayout />}>
               <Route index element={<Dashboard />} />
               <Route path="soap" element={<SOAPWriter />} />
-              <Route
-                path="drugs"
-                element={<Placeholder title="약물 검토" />}
-              />
+              <Route path="drugs" element={<PolypharmacyReview />} />
               <Route
                 path="screening"
                 element={<Placeholder title="검진 추적" />}
