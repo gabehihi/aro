@@ -53,7 +53,7 @@ def test_reduce_moderate_egfr() -> None:
 
 def test_contraindicated_low_egfr() -> None:
     checker = make_checker()
-    result = checker.check("metformin", 30.0)
+    result = checker.check("metformin", 20.0)
     assert result.recommendation == "CONTRAINDICATED"
     assert result.max_daily_dose is None
 
@@ -76,3 +76,15 @@ def test_check_all() -> None:
     assert len(results) == 2
     assert results[0].recommendation == "FULL_DOSE"
     assert results[1].recommendation == "NOT_IN_DB"
+
+
+def test_load_from_json_file() -> None:
+    from modules.polypharmacy.renal_dosing import load_renal_dosing_checker
+
+    checker = load_renal_dosing_checker()
+    # 실제 DB에서 metformin eGFR=29.9 → CONTRAINDICATED
+    result = checker.check("metformin", 29.9)
+    assert result.recommendation == "CONTRAINDICATED"
+    # 실제 DB에서 empagliflozin eGFR=25.0 → FULL_DOSE (eGFR >= 20)
+    result2 = checker.check("empagliflozin", 25.0)
+    assert result2.recommendation == "FULL_DOSE"
