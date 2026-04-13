@@ -14,12 +14,12 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 | Phase 0 — 프로젝트 기반 | ✅ 완료 | 2026-04-04 |
 | Phase 1 — SOAP Writer | ✅ 완료 | 2026-04-06 |
 | Phase 2 — Document Automation | ✅ 완료 | 2026-04-13 |
-| Phase 3 — Polypharmacy Review | 🔲 미착수 | — |
+| Phase 3 — Polypharmacy Review | ✅ 완료 | 2026-04-14 |
 | Phase 4 — Screening & F/U | 🔲 미착수 | — |
 
-**Phase 2 완료 산출물**: Backend 155 tests passing (+78), 5종 문서 자동생성, 4중 검증 파이프라인, DOCX/PDF 렌더러, DocumentWriter 프론트엔드
+**Phase 3 완료 산출물**: DDI 체커 (15쌍 룰엔진), 신기능 용량 조절 (16약물), Sick Day Advanced (14군), PolypharmacyService 오케스트레이터, REST API, PolypharmacyReview 프론트엔드 (2패널 UI)
 
-**다음 단계**: Phase 3 — Polypharmacy Review (DDI 검출, 신기능 용량 조절, Sick Day 고도화)
+**다음 단계**: Phase 4 — Screening & F/U (검진 추적, 만성질환 관리)
 
 ---
 
