@@ -1,0 +1,137 @@
+[
+  {
+    "ddi_id": "DDI_0001",
+    "drug_a_inn": "warfarin",
+    "drug_b_inn": "ibuprofen",
+    "severity": "MAJOR",
+    "mechanism": "NSAIDs가 혈소판 응집 억제 + 위장관 출혈 유발 → 출혈 위험 상승",
+    "management": "병용 금지 권고. 불가피 시 INR 밀착 모니터링 + 위장관 보호제 병용",
+    "clinic_note": "항응고제 처방 환자에서 NSAIDs 처방 전 반드시 확인"
+  },
+  {
+    "ddi_id": "DDI_0002",
+    "drug_a_inn": "warfarin",
+    "drug_b_inn": "naproxen",
+    "severity": "MAJOR",
+    "mechanism": "NSAIDs가 혈소판 응집 억제 + 위장관 출혈 유발 → 출혈 위험 상승",
+    "management": "병용 금지 권고. 불가피 시 INR 밀착 모니터링",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0003",
+    "drug_a_inn": "ramipril",
+    "drug_b_inn": "spironolactone",
+    "severity": "MAJOR",
+    "mechanism": "ACEi + K-보존 이뇨제 → 고칼륨혈증 위험",
+    "management": "병용 시 K+ 및 Cr 정기 모니터링 필수 (초기 1주 후, 이후 1~3개월)",
+    "clinic_note": "CKD 환자에서 특히 주의"
+  },
+  {
+    "ddi_id": "DDI_0004",
+    "drug_a_inn": "enalapril",
+    "drug_b_inn": "spironolactone",
+    "severity": "MAJOR",
+    "mechanism": "ACEi + K-보존 이뇨제 → 고칼륨혈증 위험",
+    "management": "병용 시 K+ 및 Cr 정기 모니터링 필수",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0005",
+    "drug_a_inn": "ramipril",
+    "drug_b_inn": "ibuprofen",
+    "severity": "MODERATE",
+    "mechanism": "NSAIDs가 신혈류 감소 → ACEi의 신보호 효과 상쇄 + AKI 위험",
+    "management": "단기 사용 시 신기능 및 혈압 모니터링. 장기 병용 피할 것",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0006",
+    "drug_a_inn": "clopidogrel",
+    "drug_b_inn": "omeprazole",
+    "severity": "MAJOR",
+    "mechanism": "Omeprazole이 CYP2C19 억제 → Clopidogrel 활성 대사체 감소 → 항혈소판 효과 감소",
+    "management": "Pantoprazole로 교체 권고 (CYP2C19 억제 약함)",
+    "clinic_note": "심혈관 고위험 환자에서 중요"
+  },
+  {
+    "ddi_id": "DDI_0007",
+    "drug_a_inn": "simvastatin",
+    "drug_b_inn": "clarithromycin",
+    "severity": "MAJOR",
+    "mechanism": "Clarithromycin이 CYP3A4 강력 억제 → Simvastatin 혈중농도 급상승 → 근육병증·횡문근융해증",
+    "management": "병용 기간 Simvastatin 일시 중단. 또는 Pravastatin/Rosuvastatin으로 교체",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0008",
+    "drug_a_inn": "levothyroxine",
+    "drug_b_inn": "calcium carbonate",
+    "severity": "MODERATE",
+    "mechanism": "Ca2+가 Levothyroxine 흡수 방해 (복합체 형성)",
+    "management": "최소 4시간 간격 복용. Levothyroxine은 공복에 단독 복용",
+    "clinic_note": "보건소 갑상선 환자에서 흔한 병용"
+  },
+  {
+    "ddi_id": "DDI_0009",
+    "drug_a_inn": "metformin",
+    "drug_b_inn": "iodinated contrast",
+    "severity": "MAJOR",
+    "mechanism": "조영제 유발 AKI 시 Metformin 축적 → 젖산산증",
+    "management": "조영제 48시간 전 중단. 조영제 투여 48시간 후 Cr 확인 후 재개",
+    "clinic_note": "CT 의뢰 시 Metformin 복용 여부 반드시 확인"
+  },
+  {
+    "ddi_id": "DDI_0010",
+    "drug_a_inn": "digoxin",
+    "drug_b_inn": "clarithromycin",
+    "severity": "MAJOR",
+    "mechanism": "Clarithromycin이 P-gp 억제 + CYP3A4 억제 → Digoxin 혈중농도 상승 → 독성",
+    "management": "Digoxin 혈중농도 모니터링. 가능하면 다른 항생제 사용",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0011",
+    "drug_a_inn": "ramipril",
+    "drug_b_inn": "furosemide",
+    "severity": "MODERATE",
+    "mechanism": "과도한 이뇨 시 혈압 저하 + 신혈류 감소",
+    "management": "병용 초기 저혈압 모니터링. Furosemide 용량 조정 고려",
+    "clinic_note": "심부전 환자에서 흔한 병용, 의도적 조합이면 모니터링"
+  },
+  {
+    "ddi_id": "DDI_0012",
+    "drug_a_inn": "allopurinol",
+    "drug_b_inn": "warfarin",
+    "severity": "MODERATE",
+    "mechanism": "Allopurinol이 Warfarin 대사 억제 → INR 상승",
+    "management": "병용 시 INR 밀착 모니터링. Warfarin 용량 감량 필요 가능성",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0013",
+    "drug_a_inn": "methotrexate",
+    "drug_b_inn": "ibuprofen",
+    "severity": "MAJOR",
+    "mechanism": "NSAIDs가 신장 Methotrexate 배설 억제 → 독성 농도 상승",
+    "management": "병용 원칙적 금지. 불가피 시 CBC + 신기능 밀착 모니터링",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0014",
+    "drug_a_inn": "lithium",
+    "drug_b_inn": "ibuprofen",
+    "severity": "MAJOR",
+    "mechanism": "NSAIDs가 신장 Lithium 재흡수 증가 → 혈중농도 상승 → 독성",
+    "management": "병용 피할 것. 불가피 시 Lithium 혈중농도 모니터링",
+    "clinic_note": null
+  },
+  {
+    "ddi_id": "DDI_0015",
+    "drug_a_inn": "amiodarone",
+    "drug_b_inn": "warfarin",
+    "severity": "MAJOR",
+    "mechanism": "Amiodarone이 CYP2C9 억제 → Warfarin 대사 감소 → INR 상승",
+    "management": "병용 시 Warfarin 용량 30~50% 감량 고려. INR 주 1회 모니터링",
+    "clinic_note": null
+  }
+]
