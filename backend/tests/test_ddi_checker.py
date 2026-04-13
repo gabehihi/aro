@@ -31,6 +31,8 @@ def test_ddi_detected_ordered() -> None:
     results = checker.check(["warfarin", "ibuprofen", "clopidogrel", "omeprazole"])
     assert len(results) == 2
     assert all(isinstance(r, DDIFinding) for r in results)
+    assert results[0].severity == "MAJOR"
+    assert results[1].severity == "MAJOR"
 
 
 def test_ddi_bidirectional() -> None:

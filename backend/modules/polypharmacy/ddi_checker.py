@@ -21,6 +21,7 @@ class DDIFinding:
     mechanism: str
     management: str
     clinic_note: str | None = None
+    ddi_id: str | None = None
 
 
 class DDIChecker:
@@ -48,6 +49,7 @@ class DDIChecker:
                         mechanism=hit["mechanism"],
                         management=hit["management"],
                         clinic_note=hit.get("clinic_note"),
+                        ddi_id=hit["ddi_id"],
                     )
                 )
         return sorted(findings, key=lambda f: _SEVERITY_ORDER.get(f.severity, 99))
