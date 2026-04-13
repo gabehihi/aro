@@ -17,6 +17,22 @@ SAMPLE_RULES = [
         "reason": "고칼륨혈증 위험",
         "detail": "K+ 안정 후 재개",
     },
+    {
+        "drug_inn": "rivaroxaban",
+        "action": "REDUCE",
+        "triggers": ["AKI"],
+        "lab_triggers": [],
+        "reason": "혈중농도 상승",
+        "detail": "신기능 안정화 후 재평가",
+    },
+    {
+        "drug_inn": "glimepiride",
+        "action": "MONITOR",
+        "triggers": ["AKI"],
+        "lab_triggers": [],
+        "reason": "저혈당 위험",
+        "detail": "혈당 모니터링",
+    },
 ]
 
 
@@ -69,3 +85,16 @@ def test_unknown_drug_no_alert() -> None:
     checker = make_checker()
     alerts = checker.check(["unknowndrug"], clinical_flags=["AKI"], labs=[])
     assert alerts == []
+
+
+def test_action_priority_sorting() -> None:
+    checker = make_checker()
+    alerts = checker.check(
+        ["glimepiride", "rivaroxaban", "metformin"],
+        clinical_flags=["AKI"],
+        labs=[],
+    )
+    assert len(alerts) == 3
+    assert alerts[0].action == "HOLD"
+    assert alerts[1].action == "REDUCE"
+    assert alerts[2].action == "MONITOR"

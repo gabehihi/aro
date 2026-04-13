@@ -52,8 +52,9 @@ class SickDayAdvancedChecker:
             if t.upper() in active_flags:
                 return t
         for lab_trigger in rule.get("lab_triggers", []):
-            if self._check_lab_trigger(lab_trigger, labs):
-                return lab_trigger["condition"]
+            flag = self._check_lab_trigger(lab_trigger, labs)
+            if flag:
+                return flag
         return None
 
     def _flags_from_labs(self, labs: list[dict]) -> set[str]:
@@ -74,7 +75,7 @@ class SickDayAdvancedChecker:
                 flags.add("HYPERKALEMIA")
         return flags
 
-    def _check_lab_trigger(self, trigger: dict, labs: list[dict]) -> bool:
+    def _check_lab_trigger(self, trigger: dict, labs: list[dict]) -> str | None:
         condition = trigger.get("condition", "")
         for lab in labs:
             name = lab.get("name", "").lower()
@@ -87,15 +88,15 @@ class SickDayAdvancedChecker:
                 and baseline is not None
                 and value >= baseline * 1.5
             ):
-                return True
+                return "AKI"
             if (
                 condition == "hyperkalemia_5.5"
                 and name == "potassium"
                 and value is not None
                 and value >= 5.5
             ):
-                return True
-        return False
+                return "HYPERKALEMIA"
+        return None
 
 
 def load_sick_day_checker() -> SickDayAdvancedChecker:
