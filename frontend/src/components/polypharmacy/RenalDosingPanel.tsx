@@ -34,10 +34,10 @@ export function RenalDosingPanel({ recommendations, egfr }: Props) {
         {flagged.length === 0 ? (
           <p className="text-sm text-green-700">모든 약물 정상 용량 사용 가능</p>
         ) : (
-          flagged.map((r, i) => {
+          flagged.map((r) => {
             const cfg = REC_CONFIG[r.recommendation] ?? REC_CONFIG.NOT_IN_DB
             return (
-              <div key={i} className="border rounded p-2 space-y-1">
+              <div key={r.drug_inn} className="border rounded p-2 space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium">{r.drug_inn}</span>
                   <Badge className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>

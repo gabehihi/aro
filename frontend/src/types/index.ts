@@ -302,7 +302,7 @@ export interface RenalRecommendation {
   source: string | null
 }
 
-export interface SickDayAlert {
+export interface PolypharmacySickDayAlert {
   drug_inn: string
   action: "HOLD" | "REDUCE" | "MONITOR"
   reason: string
@@ -321,7 +321,7 @@ export interface PolypharmacyReport {
   egfr: number | null
   ddi_findings: DDIFinding[]
   renal_recommendations: RenalRecommendation[]
-  sick_day_alerts: SickDayAlert[]
+  sick_day_alerts: PolypharmacySickDayAlert[]
   llm_summary: string
   llm_meta: LLMMeta
   warnings: PolypharmacyWarning[]

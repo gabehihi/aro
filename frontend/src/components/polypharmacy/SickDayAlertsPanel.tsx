@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import type { SickDayAlert } from "@/types"
+import type { PolypharmacySickDayAlert } from "@/types"
 
 const ACTION_CONFIG = {
   HOLD: { label: "중단", color: "bg-red-100 text-red-800 border-red-300" },
@@ -10,7 +10,7 @@ const ACTION_CONFIG = {
 } as const
 
 interface Props {
-  alerts: SickDayAlert[]
+  alerts: PolypharmacySickDayAlert[]
 }
 
 export function SickDayAlertsPanel({ alerts }: Props) {
@@ -25,10 +25,10 @@ export function SickDayAlertsPanel({ alerts }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0 space-y-2 mt-2">
-        {alerts.map((a, i) => {
+        {alerts.map((a) => {
           const cfg = ACTION_CONFIG[a.action] ?? ACTION_CONFIG.MONITOR
           return (
-            <div key={i} className={`rounded border p-2 ${cfg.color}`}>
+            <div key={`${a.drug_inn}-${a.action}`} className={`rounded border p-2 ${cfg.color}`}>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-sm font-medium">{a.drug_inn}</span>
                 <Badge className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>

@@ -47,11 +47,11 @@ export function DDIFindings({ findings }: Props) {
         <CardTitle className="text-sm">약물 상호작용 ({findings.length}건)</CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0 space-y-3">
-        {findings.map((f, i) => {
+        {findings.map((f) => {
           const cfg = SEVERITY_CONFIG[f.severity] ?? SEVERITY_CONFIG.MINOR
           const { Icon } = cfg
           return (
-            <div key={i} className={`rounded-lg border p-3 ${cfg.color}`}>
+            <div key={`${f.drug_a}-${f.drug_b}`} className={`rounded-lg border p-3 ${cfg.color}`}>
               <div className="flex items-center gap-2 mb-1">
                 <Icon className="h-4 w-4 flex-shrink-0" />
                 <span className="font-semibold text-sm">
