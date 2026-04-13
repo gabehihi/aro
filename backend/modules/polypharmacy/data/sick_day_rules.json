@@ -1,0 +1,114 @@
+[
+  {
+    "drug_inn": "metformin",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "SEVERE_INFECTION", "CONTRAST_AGENT", "PRE_SURGERY"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}],
+    "reason": "신기능 저하 시 젖산산증 위험",
+    "detail": "원인 해결 + eGFR 확인 후 재개 결정"
+  },
+  {
+    "drug_inn": "empagliflozin",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "SEVERE_INFECTION", "PRE_SURGERY", "POOR_ORAL_INTAKE"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}],
+    "reason": "DKA + AKI 위험",
+    "detail": "회복 후 경구 섭취 가능 시 재개"
+  },
+  {
+    "drug_inn": "dapagliflozin",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "SEVERE_INFECTION", "PRE_SURGERY", "POOR_ORAL_INTAKE"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}],
+    "reason": "DKA + AKI 위험",
+    "detail": "회복 후 경구 섭취 가능 시 재개"
+  },
+  {
+    "drug_inn": "canagliflozin",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "SEVERE_INFECTION", "PRE_SURGERY", "POOR_ORAL_INTAKE"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}],
+    "reason": "DKA + AKI 위험",
+    "detail": "회복 후 경구 섭취 가능 시 재개"
+  },
+  {
+    "drug_inn": "ramipril",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "HYPOTENSION"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}, {"lab": "potassium", "condition": "hyperkalemia_5.5"}],
+    "reason": "사구체 여과압 감소 → AKI 악화",
+    "detail": "혈역학 안정화 후 재개 고려"
+  },
+  {
+    "drug_inn": "enalapril",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "HYPOTENSION"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}, {"lab": "potassium", "condition": "hyperkalemia_5.5"}],
+    "reason": "사구체 여과압 감소 → AKI 악화",
+    "detail": "혈역학 안정화 후 재개 고려"
+  },
+  {
+    "drug_inn": "furosemide",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "HYPOTENSION"],
+    "lab_triggers": [],
+    "reason": "탈수 악화",
+    "detail": "혈역학 평가 후 재개 결정"
+  },
+  {
+    "drug_inn": "hydrochlorothiazide",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "HYPOTENSION"],
+    "lab_triggers": [],
+    "reason": "탈수 악화",
+    "detail": "전해질 확인 후 재개"
+  },
+  {
+    "drug_inn": "spironolactone",
+    "action": "HOLD",
+    "triggers": ["AKI"],
+    "lab_triggers": [{"lab": "potassium", "condition": "hyperkalemia_5.5"}],
+    "reason": "고칼륨혈증 위험",
+    "detail": "K+ 5.0 미만 + 신기능 안정 후 재개"
+  },
+  {
+    "drug_inn": "ibuprofen",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "HEART_FAILURE"],
+    "lab_triggers": [],
+    "reason": "신혈류 감소 → AKI 유발/악화",
+    "detail": "대체 진통제(아세트아미노펜) 사용"
+  },
+  {
+    "drug_inn": "naproxen",
+    "action": "HOLD",
+    "triggers": ["AKI", "DEHYDRATION", "HEART_FAILURE"],
+    "lab_triggers": [],
+    "reason": "신혈류 감소 → AKI 유발/악화",
+    "detail": "대체 진통제 사용"
+  },
+  {
+    "drug_inn": "rivaroxaban",
+    "action": "REDUCE",
+    "triggers": ["AKI"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}],
+    "reason": "혈중농도 상승 → 출혈 위험",
+    "detail": "신기능 안정화 후 재평가"
+  },
+  {
+    "drug_inn": "digoxin",
+    "action": "REDUCE",
+    "triggers": ["AKI", "DEHYDRATION"],
+    "lab_triggers": [{"lab": "creatinine", "condition": "acute_rise_1.5x"}],
+    "reason": "혈중농도 상승 → 독성 위험",
+    "detail": "Digoxin 혈중농도 측정"
+  },
+  {
+    "drug_inn": "glimepiride",
+    "action": "MONITOR",
+    "triggers": ["POOR_ORAL_INTAKE", "AKI"],
+    "lab_triggers": [],
+    "reason": "저혈당 위험",
+    "detail": "혈당 모니터링 강화, 필요 시 용량 감량"
+  }
+]
