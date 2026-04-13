@@ -74,6 +74,14 @@ class PolypharmacyService:
                     "severity": "error",
                 }
             )
+        if any(r.recommendation in ("AVOID", "CONTRAINDICATED") for r in renal_recs):
+            warnings.append(
+                {
+                    "type": "renal",
+                    "message": "신기능 기준으로 금기/회피 약물이 있습니다. 의사 확인 필수.",
+                    "severity": "error",
+                }
+            )
 
         return PolypharmacyReport(
             drug_inns=drug_inns,

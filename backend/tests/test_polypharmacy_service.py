@@ -87,3 +87,16 @@ async def test_no_renal_check_when_egfr_none() -> None:
         labs=[],
     )
     assert report.renal_recommendations == []
+
+
+@pytest.mark.asyncio
+async def test_warning_generated_for_renal_contraindicated() -> None:
+    service = PolypharmacyService(_mock_llm())
+    # metformin eGFR=25 → CONTRAINDICATED
+    report = await service.review(
+        drug_inns=["metformin"],
+        egfr=25.0,
+        clinical_flags=[],
+        labs=[],
+    )
+    assert any(w["type"] == "renal" and w["severity"] == "error" for w in report.warnings)
