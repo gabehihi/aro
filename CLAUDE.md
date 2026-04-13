@@ -13,11 +13,13 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 |-------|------|--------|
 | Phase 0 — 프로젝트 기반 | ✅ 완료 | 2026-04-04 |
 | Phase 1 — SOAP Writer | ✅ 완료 | 2026-04-06 |
-| Phase 2 — Document Automation | 🔲 미착수 | — |
+| Phase 2 — Document Automation | ✅ 완료 | 2026-04-13 |
 | Phase 3 — Polypharmacy Review | 🔲 미착수 | — |
 | Phase 4 — Screening & F/U | 🔲 미착수 | — |
 
-**Phase 1 완료 산출물**: Backend 77 tests passing, Frontend 빌드 성공, Alembic 마이그레이션 적용, seed 데이터 투입
+**Phase 2 완료 산출물**: Backend 155 tests passing (+78), 5종 문서 자동생성, 4중 검증 파이프라인, DOCX/PDF 렌더러, DocumentWriter 프론트엔드
+
+**다음 단계**: Phase 3 — Polypharmacy Review (DDI 검출, 신기능 용량 조절, Sick Day 고도화)
 
 ---
 
@@ -40,17 +42,15 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 ```bash
 # Backend
 cd backend
-uv run python main.py              # 서버 실행 (port 8000)
-uv run pytest tests/ -v            # 테스트 전체
-uv run pytest tests/ -k "test_name" # 특정 테스트
-ruff check . && ruff format .      # lint + format
-ty check                           # type check
+uv run python main.py                        # 서버 실행 (port 8000)
+uv run pytest tests/ -v                      # 테스트 전체
+uv run pytest tests/ -k "test_name"          # 특정 테스트
+uv run ruff check . && uv run ruff format .  # lint + format
 
 # Frontend
 cd frontend
 pnpm dev                           # 개발 서버 (port 5173)
-pnpm build                         # 프로덕션 빌드
-pnpm typecheck                     # 타입 체크
+pnpm build                         # 프로덕션 빌드 (tsc + vite)
 
 # DB
 cd backend
@@ -90,6 +90,56 @@ uv run python scripts/seed_test_data.py  # 테스트 데이터 투입
 - 진료기록 10년 보존 (의료법), DB 삭제 방지
 - 감사 로그: 환자 정보 조회/수정 이력 전수 기록
 - `.env` 파일 git commit 금지
+
+---
+
+## 현재 구현된 모듈 구조
+
+```
+backend/
+├── api/
+│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook)
+│   ├── patients.py        # CRUD + 암호화 검색
+│   ├── encounters.py      # 진료 기록 CRUD + 임상 요약
+│   ├── documents.py       # 문서 생성/저장/발급/다운로드 (8 endpoints)
+│   └── codebook.py        # 약어 코드북 관리
+├── core/
+│   ├── models/            # SQLAlchemy ORM (User/Patient/Encounter/Prescription/Document...)
+│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth)
+│   └── llm/              # LLMService + HallucinationGuard + SubjectiveFilter
+├── modules/
+│   ├── soap/              # SOAP 변환 (codebook/vitals/sick_day/prompts/parser/service)
+│   ├── documents/         # 문서 자동화 (assembler/guards/normalizer/prompts/parser/renderer/service)
+│   │   └── templates/     # Jinja2 HTML (진단서/소견서/확인서/의뢰서/건강진단서/base/default)
+│   ├── polypharmacy/      # Phase 3 — 구현 예정
+│   └── screening/         # Phase 4 — 구현 예정
+└── tests/                 # 155 tests (17개 파일)
+
+frontend/src/
+├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical)
+├── components/
+│   ├── soap/              # SOAP 관련 15개 컴포넌트
+│   ├── documents/         # Document 관련 8개 컴포넌트
+│   ├── Layout/            # AppLayout/Header/Sidebar
+│   └── ui/                # shadcn/ui 컴포넌트
+├── hooks/                 # useAuth / useSoapStore / useDocumentStore
+├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter
+└── types/index.ts         # 전체 타입 정의
+```
+
+---
+
+## 핵심 API 엔드포인트 (현재)
+
+| Method | Path | 설명 |
+|--------|------|------|
+| POST | `/api/v1/soap/convert` | 속기 → SOAP 변환 (AI 미리보기) |
+| POST | `/api/v1/encounters` | 진료 기록 저장 (의사 확인 후) |
+| GET | `/api/v1/patients/{id}/clinical-summary` | 임상 요약 |
+| POST | `/api/v1/documents/generate` | 문서 생성 (4중 검증 파이프라인) |
+| POST | `/api/v1/documents` | 문서 초안 저장 |
+| POST | `/api/v1/documents/{id}/issue` | 문서 발급 (공식 서류화) |
+| GET | `/api/v1/documents/{id}/download` | DOCX/PDF 다운로드 |
 
 ---
 

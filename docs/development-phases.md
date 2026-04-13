@@ -1,6 +1,6 @@
 # aro 개발 로드맵
 
-> 최종 업데이트: 2026-04-06
+> 최종 업데이트: 2026-04-13
 
 ---
 
@@ -10,7 +10,7 @@
 |-------|------|------|--------|
 | **Phase 0** — 프로젝트 기반 | Week 1~2 | ✅ 완료 | 2026-04-04 |
 | **Phase 1** — SOAP Writer | Week 3~4 | ✅ 완료 | 2026-04-06 |
-| **Phase 2** — Document Automation | Week 5~7 | 🔲 미착수 | — |
+| **Phase 2** — Document Automation | Week 5~7 | ✅ 완료 | 2026-04-13 |
 | **Phase 3** — Polypharmacy Review | Week 8~11 | 🔲 미착수 | — |
 | **Phase 4-A** — 검진 추적 | Week 12~14 | 🔲 미착수 | — |
 | **Phase 4-B** — 환자 관리 고도화 | Week 15~17 | 🔲 미착수 | — |
@@ -61,22 +61,33 @@
 
 ---
 
-## Phase 2 — Document Automation 🔲
+## Phase 2 — Document Automation ✅
 
-**목표**: 진단서/의뢰서/소견서/확인서/안내서 자동 생성 + 4중 검증
+**목표**: 진단서/의뢰서/소견서/확인서/건강진단서 자동 생성 + 4중 검증
 
-**주요 작업:**
-1. Document 모델 + 템플릿 스키마 설계
-2. 4중 검증 파이프라인 (Grounded Generation)
-   - Source Data Assembly: 진료 데이터 → JSON 구조화
-   - Constrained Generation: 입력에 없는 사실 생성 금지
-   - Fact-check Layer: 수치/진단/검사명 역검증 + 주관적 표현 필터 + 용어 정규화
-   - Human-in-the-loop: 경고 미해결 시 발급 비활성화
-3. python-docx 템플릿 엔진 (5종: 진단서, 소견서, 의뢰서, 확인서, 건강진단서)
-4. WeasyPrint PDF 변환
-5. 의학 용어 정규화 ("고혈압" → "본태성 고혈압", "당뇨" → "제2형 당뇨병")
-6. SOAP 기록 자동 참조 (의뢰서 작성 시)
-7. Frontend: 문서 유형 선택 → 미리보기 → 편집 → PDF 다운로드
+**구현 완료 항목:**
+
+| 구성요소 | 파일 | 설명 |
+|----------|------|------|
+| SourceDataAssembler | `modules/documents/assembler.py` | 진료 데이터 → JSON 구조화 |
+| DocumentFactChecker | `modules/documents/guards.py` | 수치/진단/검사명 역검증 |
+| MedicalTermNormalizer | `modules/documents/normalizer.py` | 한국어 의학용어 정규화 |
+| DocumentPrompts | `modules/documents/prompts.py` | 캐시 가능한 시스템 프롬프트 |
+| DocumentParser | `modules/documents/parser.py` | LLM JSON 응답 파싱 |
+| DocumentService | `modules/documents/service.py` | 4중 파이프라인 오케스트레이터 |
+| DocumentRenderer | `modules/documents/renderer.py` | DOCX(python-docx) + PDF(WeasyPrint+Jinja2) |
+| Document API | `api/documents.py` | 8개 엔드포인트 |
+| DocumentWriter | `frontend/src/pages/DocumentWriter.tsx` | 60/40 레이아웃 UI |
+
+**4중 검증 파이프라인:**
+1. Source Data Assembly — 환자/진료/처방/검진 → JSON 구조화
+2. Constrained Generation — 입력에 없는 사실 생성 금지 (프롬프트 제약)
+3. Fact-check Layer — 수치 일치(±0.1), KCD코드 검증, 주관적 표현 필터, 용어 정규화
+4. Human-in-the-loop — 미해결 오류 시 발급 버튼 비활성화
+
+**5종 문서 템플릿:** 진단서 / 소견서 / 확인서 / 의뢰서 / 건강진단서
+
+**검증**: 78개 신규 테스트 (총 155개 통과), Frontend 빌드 성공
 
 **비용**: Sonnet 캐싱 적용 시 월 ~$3.94 (일 5건 × 22일)
 
@@ -86,24 +97,57 @@
 
 **목표**: DDI 검출, 신기능 용량 조절, Sick Day Rules 고도화
 
-**주요 작업:**
-1. 약물 DB 구축
-   - Prescription 모델 활용 (상품명 → INN → ATC → DrugBank ID 매핑)
-   - DDI DB: 심평원 DUR + 식약처 e약은요 + DrugBank Open 결합 → ~500쌍
-   - clinic_note 필드로 보건소 맥락 지침 추가
-2. 신기능 용량 조절 DB (3-Tier)
-   - Tier 1: 수작업 고빈도 ~40종 (PI+KDIGO 기반, eGFR 구간별 권고)
-   - Tier 2: DrugBank+LLM 반자동 ~200종
-   - Tier 3: 미등록 약물 LLM 플래깅
-3. Sick Day Rules 확장 (현재 Phase 1 기본 엔진 위에)
-   - Lab 연동 트리거 (AKI, 고칼륨 등)
-   - 환자 특이적 약물 매핑
-4. 약물검토 리포트 UI
-5. Hallucination Guard 강화 — DDI는 DB 조회만, LLM 생성 금지
+**예정 구현 디렉토리**: `backend/modules/polypharmacy/` (빈 패키지 생성됨)
+
+**Step-by-step 구현 계획:**
+
+### Step 1 — 약물 DB 모델 + 매핑 테이블
+- `Drug` 모델: 상품명 → INN → ATC 코드 → DrugBank ID
+- `DrugInteraction` 모델: drug_a / drug_b / severity (contraindicated/major/moderate/minor) / mechanism / clinic_note
+- `RenalDosing` 모델: drug_id / egfr_threshold / recommendation / reference
+- Alembic 마이그레이션 생성
+
+### Step 2 — DDI 룰 DB 구축 (~500쌍)
+- 소스: 심평원 DUR JSON + 식약처 e약은요 API + DrugBank Open Data
+- 보건소 고빈도 처방 패턴 반영 (HTN/DM/DLD 조합 위주)
+- `scripts/build_ddi_db.py` 스크립트로 자동 투입
+- **Hallucination Guard**: DDI는 DB 조회 결과만 사용, LLM 추론 절대 금지
+
+### Step 3 — 신기능 용량 조절 DB (3-Tier)
+- Tier 1 (수작업, ~40종): PI+KDIGO 기반, eGFR <60/<30/<15 구간별 권고
+  - 대상: metformin, SGLT2i, GLP1-RA, RAAS, NSAID, allopurinol 등
+- Tier 2 (반자동, ~200종): DrugBank 데이터 + LLM 검토
+- Tier 3: 미등록 약물 → LLM 플래그 + `[의사 확인 필요]` 표시
+
+### Step 4 — PolypharmacyService 구현
+```
+modules/polypharmacy/
+├── __init__.py
+├── ddi_checker.py      # DDI 검출 룰 엔진 (DB 조회만)
+├── renal_dosing.py     # eGFR 기반 용량 조절 제안
+├── sick_day_advanced.py # Lab 연동 트리거 (AKI/고칼륨 등) 확장
+└── service.py          # 오케스트레이터 → PolypharmacyReport 반환
+```
+
+### Step 5 — 약물검토 API
+- `POST /api/v1/polypharmacy/review` — 처방 목록 + eGFR → 리포트
+- `GET /api/v1/polypharmacy/interactions` — DDI DB 조회
+- `GET /api/v1/polypharmacy/renal-dosing/{drug_id}` — 용량 조절 조회
+
+### Step 6 — Frontend 약물검토 UI
+- `pages/PolypharmacyReview.tsx` — 2-panel: 처방 목록 좌 / 리포트 우
+- DDI 심각도별 색상 뱃지 (금기=red/주요=orange/중등도=yellow/경미=gray)
+- eGFR 입력 → 실시간 용량 조절 안내
+
+### Step 7 — SOAP 연동
+- SOAP 변환 시 active_prescriptions → 자동 DDI 검토 사이드 패널
+- Sick Day 감지 시 Lab 수치(AKI, K+) 연동 트리거
 
 **외부 API:**
-- 식약처 e약은요 API
+- 식약처 e약은요 API (공공데이터포털)
 - 심평원 DUR 공공데이터
+
+**예상 테스트**: +60개 (ddi_checker/renal_dosing/sick_day_advanced/service/api)
 
 ---
 
