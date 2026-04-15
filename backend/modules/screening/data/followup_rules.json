@@ -1,0 +1,61 @@
+{
+  "_comment": "interval_days: F/U 재검 권고 간격.",
+  "rules": [
+    {
+      "item": "eGFR",
+      "condition": "value < 60",
+      "alert_type": "lab_recheck",
+      "interval_days": 90,
+      "priority_logic": {"urgent_if_overdue_days": 14, "due_if_within_days": 7},
+      "message_template": "eGFR {value} mL/min/1.73m² — 신기능 추적 검사 권고"
+    },
+    {
+      "item": "HbA1c",
+      "condition": "value >= 7.0",
+      "alert_type": "lab_recheck",
+      "interval_days": 90,
+      "priority_logic": {"urgent_if_overdue_days": 14, "due_if_within_days": 7},
+      "message_template": "HbA1c {value}% — 혈당 조절 목표 미달, 재검 권고"
+    },
+    {
+      "item": "UA_protein",
+      "condition": "value >= 1+",
+      "alert_type": "lab_recheck",
+      "interval_days": 14,
+      "priority_logic": {"urgent_if_overdue_days": 3, "due_if_within_days": 3},
+      "message_template": "단백뇨 {value} — 정량 검사(ACR) 및 재확인 권고"
+    },
+    {
+      "item": "AST",
+      "condition": "value >= 40",
+      "alert_type": "lab_recheck",
+      "interval_days": 28,
+      "priority_logic": {"urgent_if_overdue_days": 7, "due_if_within_days": 7},
+      "message_template": "AST {value} IU/L — 간기능 이상, 4주 후 재검 권고"
+    },
+    {
+      "item": "ALT",
+      "condition": "value >= 40",
+      "alert_type": "lab_recheck",
+      "interval_days": 28,
+      "priority_logic": {"urgent_if_overdue_days": 7, "due_if_within_days": 7},
+      "message_template": "ALT {value} IU/L — 간기능 이상, 4주 후 재검 권고"
+    },
+    {
+      "item": "LDL",
+      "condition": "value > 100 AND patient_has_dm",
+      "alert_type": "lab_recheck",
+      "interval_days": 42,
+      "priority_logic": {"urgent_if_overdue_days": 14, "due_if_within_days": 7},
+      "message_template": "LDL {value} mg/dL (DM 환자) — 스타틴 시작 후 6주 재검 권고"
+    },
+    {
+      "item": "TSH",
+      "condition": "value > 4.0 OR value < 0.4",
+      "alert_type": "lab_recheck",
+      "interval_days": 42,
+      "priority_logic": {"urgent_if_overdue_days": 7, "due_if_within_days": 7},
+      "message_template": "TSH {value} μIU/mL — 갑상선 기능 이상, 6주 후 재검 권고"
+    }
+  ]
+}

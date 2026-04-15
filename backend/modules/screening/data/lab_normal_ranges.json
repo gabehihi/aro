@@ -1,0 +1,117 @@
+{
+  "_comment": "tier: urgent|caution|normal. ref_range: display string for patient guidance.",
+  "eGFR": {
+    "unit": "mL/min/1.73m²",
+    "tiers": [
+      {"tier": "urgent",  "condition": "<",  "value": 30},
+      {"tier": "caution", "condition": "<",  "value": 60},
+      {"tier": "normal",  "condition": ">=", "value": 60}
+    ],
+    "ref_range": "60 이상"
+  },
+  "HbA1c": {
+    "unit": "%",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 9.0},
+      {"tier": "caution", "condition": ">=", "value": 7.0},
+      {"tier": "normal",  "condition": "<",  "value": 7.0}
+    ],
+    "ref_range": "7.0 미만"
+  },
+  "FBS": {
+    "unit": "mg/dL",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 200},
+      {"tier": "caution", "condition": ">=", "value": 126},
+      {"tier": "normal",  "condition": "<",  "value": 100}
+    ],
+    "ref_range": "100 미만"
+  },
+  "LDL": {
+    "unit": "mg/dL",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 190},
+      {"tier": "caution", "condition": ">=", "value": 130},
+      {"tier": "normal",  "condition": "<",  "value": 130}
+    ],
+    "ref_range": "130 미만"
+  },
+  "AST": {
+    "unit": "IU/L",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 120},
+      {"tier": "caution", "condition": ">=", "value": 40},
+      {"tier": "normal",  "condition": "<",  "value": 40}
+    ],
+    "ref_range": "40 미만"
+  },
+  "ALT": {
+    "unit": "IU/L",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 120},
+      {"tier": "caution", "condition": ">=", "value": 40},
+      {"tier": "normal",  "condition": "<",  "value": 40}
+    ],
+    "ref_range": "40 미만"
+  },
+  "TSH": {
+    "unit": "μIU/mL",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">",  "value": 10.0},
+      {"tier": "urgent",  "condition": "<",  "value": 0.1},
+      {"tier": "caution", "condition": ">",  "value": 4.0},
+      {"tier": "caution", "condition": "<",  "value": 0.4},
+      {"tier": "normal",  "condition": "range", "low": 0.4, "high": 4.0}
+    ],
+    "ref_range": "0.4~4.0"
+  },
+  "Creatinine": {
+    "unit": "mg/dL",
+    "sex_based": true,
+    "male": {
+      "tiers": [
+        {"tier": "urgent",  "condition": ">=", "value": 3.0},
+        {"tier": "caution", "condition": ">=", "value": 1.2},
+        {"tier": "normal",  "condition": "<",  "value": 1.2}
+      ],
+      "ref_range": "1.2 미만"
+    },
+    "female": {
+      "tiers": [
+        {"tier": "urgent",  "condition": ">=", "value": 2.5},
+        {"tier": "caution", "condition": ">=", "value": 1.0},
+        {"tier": "normal",  "condition": "<",  "value": 1.0}
+      ],
+      "ref_range": "1.0 미만"
+    }
+  },
+  "UA_protein": {
+    "unit": "",
+    "ordinal": true,
+    "order": ["negative", "trace", "1+", "2+", "3+", "4+"],
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": "2+"},
+      {"tier": "caution", "condition": ">=", "value": "1+"},
+      {"tier": "normal",  "condition": "<",  "value": "1+"}
+    ],
+    "ref_range": "음성(negative)"
+  },
+  "SBP": {
+    "unit": "mmHg",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 180},
+      {"tier": "caution", "condition": ">=", "value": 140},
+      {"tier": "normal",  "condition": "<",  "value": 140}
+    ],
+    "ref_range": "140 미만"
+  },
+  "DBP": {
+    "unit": "mmHg",
+    "tiers": [
+      {"tier": "urgent",  "condition": ">=", "value": 110},
+      {"tier": "caution", "condition": ">=", "value": 90},
+      {"tier": "normal",  "condition": "<",  "value": 90}
+    ],
+    "ref_range": "90 미만"
+  }
+}
