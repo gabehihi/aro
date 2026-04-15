@@ -43,7 +43,7 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 # Backend
 cd backend
 uv run python main.py                        # 서버 실행 (port 8000)
-uv run pytest tests/ -v                      # 테스트 전체
+uv run pytest tests/ -v                      # 테스트 전체 (185 tests)
 uv run pytest tests/ -k "test_name"          # 특정 테스트
 uv run ruff check . && uv run ruff format .  # lint + format
 
@@ -67,7 +67,7 @@ uv run python scripts/seed_test_data.py  # 테스트 데이터 투입
 3. **주관적 표현 배제** — AI는 사실 기술만, 판단은 의사. 수치+변화량+가이드라인 분류만 사용
 4. **의사 판단 플레이스홀더** — LLM 판단 영역은 `[의사 소견: ___]`로 빈칸 처리
 5. **프롬프트 캐싱** — 시스템 프롬프트+코드북+문체가이드 캐싱 → 90% 비용 절감
-6. **약물검토 Hallucination Guard** — DDI는 DB 조회 결과만 사용, LLM 생성 절대 금지
+6. **약물검토 Hallucination Guard** — DDI/용량 판단은 JSON DB 조회 결과만 사용, LLM 생성 절대 금지
 
 ---
 
@@ -98,33 +98,40 @@ uv run python scripts/seed_test_data.py  # 테스트 데이터 투입
 ```
 backend/
 ├── api/
-│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook)
+│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook/polypharmacy)
 │   ├── patients.py        # CRUD + 암호화 검색
 │   ├── encounters.py      # 진료 기록 CRUD + 임상 요약
 │   ├── documents.py       # 문서 생성/저장/발급/다운로드 (8 endpoints)
-│   └── codebook.py        # 약어 코드북 관리
+│   ├── codebook.py        # 약어 코드북 관리
+│   └── polypharmacy.py    # 약물검토 API (POST /polypharmacy/review)
 ├── core/
 │   ├── models/            # SQLAlchemy ORM (User/Patient/Encounter/Prescription/Document...)
-│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth)
-│   └── llm/              # LLMService + HallucinationGuard + SubjectiveFilter
+│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth/polypharmacy)
+│   └── llm/               # LLMService + HallucinationGuard + SubjectiveFilter
 ├── modules/
 │   ├── soap/              # SOAP 변환 (codebook/vitals/sick_day/prompts/parser/service)
 │   ├── documents/         # 문서 자동화 (assembler/guards/normalizer/prompts/parser/renderer/service)
 │   │   └── templates/     # Jinja2 HTML (진단서/소견서/확인서/의뢰서/건강진단서/base/default)
-│   ├── polypharmacy/      # Phase 3 — 구현 예정
-│   └── screening/         # Phase 4 — 구현 예정
-└── tests/                 # 155 tests (17개 파일)
+│   ├── polypharmacy/      # Phase 3 ✅
+│   │   ├── data/          # ddi_pairs.json (15쌍) / renal_dosing.json (16약물) / sick_day_rules.json (14군)
+│   │   ├── ddi_checker.py       # DDIChecker — 양방향 인덱싱, severity 정렬
+│   │   ├── renal_dosing.py      # RenalDosingChecker — eGFR [min,max) 구간 매칭
+│   │   ├── sick_day_advanced.py # SickDayAdvancedChecker — 임상 플래그 + 검사치 트리거
+│   │   └── service.py           # PolypharmacyService — 3체커 오케스트레이션 + LLM 요약
+│   └── screening/         # Phase 4 — 미착수
+└── tests/                 # 185 tests (23개 파일)
 
 frontend/src/
-├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical)
+├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical/polypharmacy)
 ├── components/
 │   ├── soap/              # SOAP 관련 15개 컴포넌트
 │   ├── documents/         # Document 관련 8개 컴포넌트
+│   ├── polypharmacy/      # Phase 3 ✅ (DrugListPanel/DDIFindings/RenalDosingPanel/SickDayAlertsPanel)
 │   ├── Layout/            # AppLayout/Header/Sidebar
 │   └── ui/                # shadcn/ui 컴포넌트
-├── hooks/                 # useAuth / useSoapStore / useDocumentStore
-├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter
-└── types/index.ts         # 전체 타입 정의
+├── hooks/                 # useAuth / useSoapStore / useDocumentStore / usePolypharmacyStore
+├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter / PolypharmacyReview
+└── types/index.ts         # 전체 타입 정의 (Phase 1~3 포함)
 ```
 
 ---
@@ -133,13 +140,13 @@ frontend/src/
 
 | Method | Path | 설명 |
 |--------|------|------|
-| POST | `/api/v1/soap/convert` | 속기 → SOAP 변환 (AI 미리보기) |
-| POST | `/api/v1/encounters` | 진료 기록 저장 (의사 확인 후) |
+| POST | `/api/v1/soap/convert` | 속기 → SOAP 변환 |
+| POST | `/api/v1/encounters` | 진료 기록 저장 |
 | GET | `/api/v1/patients/{id}/clinical-summary` | 임상 요약 |
 | POST | `/api/v1/documents/generate` | 문서 생성 (4중 검증 파이프라인) |
-| POST | `/api/v1/documents` | 문서 초안 저장 |
-| POST | `/api/v1/documents/{id}/issue` | 문서 발급 (공식 서류화) |
+| POST | `/api/v1/documents/{id}/issue` | 문서 발급 |
 | GET | `/api/v1/documents/{id}/download` | DOCX/PDF 다운로드 |
+| POST | `/api/v1/polypharmacy/review` | 약물검토 리포트 (DDI+신기능+SickDay+LLM 요약) |
 
 ---
 
@@ -147,7 +154,6 @@ frontend/src/
 
 | 문서 | 경로 | 내용 |
 |------|------|------|
-| PRD v1.1 | `docs/PRD.md` | 전체 요구사항 (1,039줄) |
-| 아키텍처 | `docs/architecture.md` | 모듈 구조, 디렉토리, 데이터 모델, 모듈 간 연동 |
-| 개발 로드맵 | `docs/development-phases.md` | Phase 0~4 상세 계획 + 구현 상태 추적 |
-| 컨텍스트 압축 | `docs/context-summary.md` | PRD 논의 과정 압축본 |
+| PRD v1.1 | `docs/PRD.md` | 전체 요구사항 |
+| 아키텍처 | `docs/architecture.md` | 모듈 구조, 데이터 모델, 모듈 간 연동 |
+| 개발 로드맵 | `docs/development-phases.md` | Phase 0~4 상세 계획 + 구현 상태 |
