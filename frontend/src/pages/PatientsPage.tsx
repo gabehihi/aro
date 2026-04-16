@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { getPatients, createPatient, updatePatient } from "@/api/patients"
 import type { Patient, PatientCreate, PatientUpdate, InsuranceType, Sex } from "@/types"
+import { useDebounce } from "@/hooks/useDebounce"
 
 const INSURANCE_OPTIONS: InsuranceType[] = [
   "건강보험",
@@ -14,15 +15,6 @@ const INSURANCE_OPTIONS: InsuranceType[] = [
   "자동차보험",
   "비급여",
 ]
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(id)
-  }, [value, delay])
-  return debounced
-}
 
 function sexLabel(sex: Sex) {
   return sex === "M" ? "남" : "여"

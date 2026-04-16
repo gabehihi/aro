@@ -9,15 +9,7 @@ import { ScreeningEntryForm } from "@/components/screening/ScreeningEntryForm"
 import { LabResultsTable } from "@/components/screening/LabResultsTable"
 import { FollowUpDashboard } from "@/components/screening/FollowUpDashboard"
 import type { AbnormalFinding, Patient } from "@/types"
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debounced, setDebounced] = useState(value)
-  useEffect(() => {
-    const id = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(id)
-  }, [value, delay])
-  return debounced
-}
+import { useDebounce } from "@/hooks/useDebounce"
 
 interface PatientSearchSelectProps {
   selectedPatientId: string | null
@@ -31,6 +23,13 @@ function PatientSearchSelect({ selectedPatientId, onSelect }: PatientSearchSelec
   const [isOpen, setIsOpen] = useState(false)
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!selectedPatientId) {
+      setSelectedLabel(null)
+      setQuery("")
+    }
+  }, [selectedPatientId])
 
   useEffect(() => {
     if (!debouncedQuery.trim()) {
