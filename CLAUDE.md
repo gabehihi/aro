@@ -15,11 +15,31 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 | Phase 1 — SOAP Writer | ✅ 완료 | 2026-04-06 |
 | Phase 2 — Document Automation | ✅ 완료 | 2026-04-13 |
 | Phase 3 — Polypharmacy Review | ✅ 완료 | 2026-04-14 |
-| Phase 4 — Screening & F/U | ✅ 완료 | 2026-04-16 |
+| Phase 4 — Screening & F/U (Core) | ✅ 완료 | 2026-04-16 |
+| Phase 4 — Messaging / Monthly Report | 🔲 미착수 | — |
 
-**Phase 4 완료 산출물**: 이상소견 분류기 (11종 룰엔진, 3단계 tiering), F/U 알림 엔진 (7개 재검 규칙), ScreeningService 오케스트레이터, REST API (4 endpoints), ScreeningPage 프론트엔드 (2패널 + F/U 대시보드), 검사결과안내서·교육문서 템플릿 (HTN/DM)
+### Phase별 완료 산출물
 
-**다음 단계**: Phase 5 또는 F4 나머지 (F4-4 Kakao/SMS 알림, F4-7 월간 리포트)
+| Phase | 핵심 산출물 | 테스트 |
+|-------|------------|--------|
+| Phase 1 | SOAP 변환 엔진, Hallucination Guard, ClinicalDashboard | 77개 |
+| Phase 2 | 5종 문서 자동생성, 4중 검증 파이프라인, DOCX/PDF 렌더러 | +78개 |
+| Phase 3 | DDI 체커(15쌍), 신기능 용량조절(16약물), SickDay Advanced(14군) | +30개 |
+| Phase 4 Core | 이상소견 분류기(11종), F/U 알림 엔진(7규칙), 검진 대시보드 UI | +27개 |
+
+**전체 테스트**: 212개 passing
+
+### 미구현 항목 (우선순위 순)
+
+| 항목 | 분류 | 난이도 | 비고 |
+|------|------|--------|------|
+| 환자 관리 페이지 (`/patients`) | 필수 | 중 | 현재 Placeholder — 검진 입력 환자 선택 연동 필요 |
+| F4-4 카카오 알림톡 + SMS | 핵심 | 고 | 외부 API (카카오 bizm, NHN) 계약 필요 |
+| F4-7 월간 보고서 자동생성 | 유용 | 중 | APScheduler + PDF 생성 |
+| DLD/CKD 교육문서 템플릿 | 유용 | 저 | HTN/DM만 완성, 2종 추가 필요 |
+| VisitSchedule 리마인더 연동 | 핵심 | 중 | 모델 있음, 로직 미구현 |
+| 설정 페이지 (`/settings`) | 부가 | 중 | 현재 Placeholder |
+| Alembic 마이그레이션 최신화 확인 | 인프라 | 저 | Phase 4 모델 반영 여부 확인 필요 |
 
 ---
 
@@ -43,7 +63,7 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 # Backend
 cd backend
 uv run python main.py                        # 서버 실행 (port 8000)
-uv run pytest tests/ -v                      # 테스트 전체 (185 tests)
+uv run pytest tests/ -v                      # 테스트 전체 (212 tests)
 uv run pytest tests/ -k "test_name"          # 특정 테스트
 uv run ruff check . && uv run ruff format .  # lint + format
 
@@ -98,40 +118,47 @@ uv run python scripts/seed_test_data.py  # 테스트 데이터 투입
 ```
 backend/
 ├── api/
-│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook/polypharmacy)
+│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook/polypharmacy/screening)
 │   ├── patients.py        # CRUD + 암호화 검색
 │   ├── encounters.py      # 진료 기록 CRUD + 임상 요약
 │   ├── documents.py       # 문서 생성/저장/발급/다운로드 (8 endpoints)
 │   ├── codebook.py        # 약어 코드북 관리
-│   └── polypharmacy.py    # 약물검토 API (POST /polypharmacy/review)
+│   ├── polypharmacy.py    # 약물검토 API (POST /polypharmacy/review)
+│   └── screening.py       # 검진 API (classify-preview/results/dashboard/alerts) ✅ Phase 4
 ├── core/
-│   ├── models/            # SQLAlchemy ORM (User/Patient/Encounter/Prescription/Document...)
-│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth/polypharmacy)
+│   ├── models/            # SQLAlchemy ORM (User/Patient/Encounter/Prescription/Document/ScreeningResult/FollowUpAlert/VisitSchedule)
+│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth/polypharmacy/screening)
 │   └── llm/               # LLMService + HallucinationGuard + SubjectiveFilter
 ├── modules/
 │   ├── soap/              # SOAP 변환 (codebook/vitals/sick_day/prompts/parser/service)
 │   ├── documents/         # 문서 자동화 (assembler/guards/normalizer/prompts/parser/renderer/service)
-│   │   └── templates/     # Jinja2 HTML (진단서/소견서/확인서/의뢰서/건강진단서/base/default)
+│   │   └── templates/     # Jinja2 HTML (진단서/소견서/확인서/의뢰서/건강진단서/lab_guidance/education_htn/education_dm/base)
 │   ├── polypharmacy/      # Phase 3 ✅
 │   │   ├── data/          # ddi_pairs.json (15쌍) / renal_dosing.json (16약물) / sick_day_rules.json (14군)
 │   │   ├── ddi_checker.py       # DDIChecker — 양방향 인덱싱, severity 정렬
 │   │   ├── renal_dosing.py      # RenalDosingChecker — eGFR [min,max) 구간 매칭
 │   │   ├── sick_day_advanced.py # SickDayAdvancedChecker — 임상 플래그 + 검사치 트리거
 │   │   └── service.py           # PolypharmacyService — 3체커 오케스트레이션 + LLM 요약
-│   └── screening/         # Phase 4 — 미착수
-└── tests/                 # 185 tests (23개 파일)
+│   └── screening/         # Phase 4 ✅
+│       ├── data/          # lab_normal_ranges.json (11종) / followup_rules.json (7규칙)
+│       ├── classifier.py        # AbnormalClassifier — 3단계 tiering (urgent/caution/normal)
+│       ├── follow_up.py         # FollowUpEngine — F/U 알림 후보 생성
+│       └── service.py           # ScreeningService — 분류+저장+대시보드 오케스트레이터
+└── tests/                 # 212 tests (26개 파일)
 
 frontend/src/
-├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical/polypharmacy)
+├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical/polypharmacy/screening)
 ├── components/
 │   ├── soap/              # SOAP 관련 15개 컴포넌트
 │   ├── documents/         # Document 관련 8개 컴포넌트
 │   ├── polypharmacy/      # Phase 3 ✅ (DrugListPanel/DDIFindings/RenalDosingPanel/SickDayAlertsPanel)
+│   ├── screening/         # Phase 4 ✅ (DashboardMetricCard/LabResultsTable/FollowUpDashboard/ScreeningEntryForm)
 │   ├── Layout/            # AppLayout/Header/Sidebar
-│   └── ui/                # shadcn/ui 컴포넌트
-├── hooks/                 # useAuth / useSoapStore / useDocumentStore / usePolypharmacyStore
-├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter / PolypharmacyReview
-└── types/index.ts         # 전체 타입 정의 (Phase 1~3 포함)
+│   └── ui/                # shadcn/ui 컴포넌트 (card/badge/tabs/... )
+├── hooks/                 # useAuth / useSoapStore / useDocumentStore / usePolypharmacyStore / useScreeningStore
+├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter / PolypharmacyReview / ScreeningPage
+│                          # (Placeholder 남음: /patients, /settings)
+└── types/index.ts         # 전체 타입 정의 (Phase 1~4 포함)
 ```
 
 ---
@@ -147,6 +174,10 @@ frontend/src/
 | POST | `/api/v1/documents/{id}/issue` | 문서 발급 |
 | GET | `/api/v1/documents/{id}/download` | DOCX/PDF 다운로드 |
 | POST | `/api/v1/polypharmacy/review` | 약물검토 리포트 (DDI+신기능+SickDay+LLM 요약) |
+| POST | `/api/v1/screening/classify-preview` | 검진 결과 이상소견 미리보기 (저장 없음) |
+| POST | `/api/v1/screening/results` | 검진 결과 저장 + 분류 + F/U 알림 자동 생성 |
+| GET | `/api/v1/screening/dashboard` | F/U 대시보드 (메트릭 + 알림목록 + 미방문) |
+| PATCH | `/api/v1/screening/alerts/{id}/resolve` | F/U 알림 완료 처리 |
 
 ---
 
