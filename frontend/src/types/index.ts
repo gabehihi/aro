@@ -402,3 +402,36 @@ export interface DashboardResponse {
     days_since_last_visit: number | null
   }>
 }
+
+// ── Phase 5: Visit Schedules ──────────────────────────────────────
+
+export interface VisitScheduleCreate {
+  patient_id: string
+  scheduled_date: string   // "YYYY-MM-DD"
+  planned_tests?: string[]
+  needs_fasting?: boolean
+  special_instructions?: string[]
+}
+
+export interface VisitScheduleUpdate {
+  scheduled_date?: string
+  planned_tests?: string[]
+  needs_fasting?: boolean
+  special_instructions?: string[]
+  visit_completed?: boolean
+  reminder_status?: Record<string, unknown>
+}
+
+export interface VisitScheduleItem {
+  id: string
+  patient_id: string
+  patient_name: string
+  chart_no: string
+  scheduled_date: string
+  planned_tests: string[]
+  needs_fasting: boolean
+  special_instructions: string[]
+  reminder_status: Record<string, unknown>
+  visit_completed: boolean
+  created_at: string
+}

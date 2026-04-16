@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { useScreeningStore } from "@/hooks/useScreeningStore"
 import { getDashboard, resolveAlert } from "@/api/screening"
 import { DashboardMetricCard } from "./DashboardMetricCard"
+import { UpcomingVisitsCard } from "./UpcomingVisitsCard"
 import type { FollowUpAlertItem } from "@/types"
 
 const priorityBadge: Record<string, "destructive" | "secondary" | "outline"> = {
@@ -50,6 +51,7 @@ export function FollowUpDashboard() {
 
   return (
     <div className="space-y-6">
+      <UpcomingVisitsCard />
       <div className="grid grid-cols-2 gap-3">
         <DashboardMetricCard
           label="오늘 F/U 예정"
