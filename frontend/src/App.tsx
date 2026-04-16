@@ -9,6 +9,7 @@ import { SOAPWriter } from "@/pages/SOAPWriter"
 import { DocumentWriter } from "@/pages/DocumentWriter"
 import { PolypharmacyReview } from "@/pages/PolypharmacyReview"
 import ScreeningPage from "@/pages/ScreeningPage"
+import PatientsPage from "@/pages/PatientsPage"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,7 +39,7 @@ export default function App() {
               />
               <Route
                 path="patients"
-                element={<Placeholder title="환자 관리" />}
+                element={<PatientsPage />}
               />
               <Route
                 path="settings"
