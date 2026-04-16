@@ -15,11 +15,11 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 | Phase 1 — SOAP Writer | ✅ 완료 | 2026-04-06 |
 | Phase 2 — Document Automation | ✅ 완료 | 2026-04-13 |
 | Phase 3 — Polypharmacy Review | ✅ 완료 | 2026-04-14 |
-| Phase 4 — Screening & F/U | 🔲 미착수 | — |
+| Phase 4 — Screening & F/U | ✅ 완료 | 2026-04-16 |
 
-**Phase 3 완료 산출물**: DDI 체커 (15쌍 룰엔진), 신기능 용량 조절 (16약물), Sick Day Advanced (14군), PolypharmacyService 오케스트레이터, REST API, PolypharmacyReview 프론트엔드 (2패널 UI)
+**Phase 4 완료 산출물**: 이상소견 분류기 (11종 룰엔진, 3단계 tiering), F/U 알림 엔진 (7개 재검 규칙), ScreeningService 오케스트레이터, REST API (4 endpoints), ScreeningPage 프론트엔드 (2패널 + F/U 대시보드), 검사결과안내서·교육문서 템플릿 (HTN/DM)
 
-**다음 단계**: Phase 4 — Screening & F/U (검진 추적, 만성질환 관리)
+**다음 단계**: Phase 5 또는 F4 나머지 (F4-4 Kakao/SMS 알림, F4-7 월간 리포트)
 
 ---
 
