@@ -16,7 +16,8 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 | Phase 2 — Document Automation | ✅ 완료 | 2026-04-13 |
 | Phase 3 — Polypharmacy Review | ✅ 완료 | 2026-04-14 |
 | Phase 4 — Screening & F/U (Core) | ✅ 완료 | 2026-04-16 |
-| Phase 4 — Messaging / Monthly Report | 🔲 미착수 | — |
+| Phase 5 — 잔여 기능 완성 | ✅ 완료 | 2026-04-16 |
+| F4-4 카카오 알림톡 + SMS | 🔲 미착수 | 외부 API 계약 필요 |
 
 ### Phase별 완료 산출물
 
@@ -26,20 +27,16 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 | Phase 2 | 5종 문서 자동생성, 4중 검증 파이프라인, DOCX/PDF 렌더러 | +78개 |
 | Phase 3 | DDI 체커(15쌍), 신기능 용량조절(16약물), SickDay Advanced(14군) | +30개 |
 | Phase 4 Core | 이상소견 분류기(11종), F/U 알림 엔진(7규칙), 검진 대시보드 UI | +27개 |
+| Phase 5 | 환자관리 페이지, 내원예약 API, 월간보고서, 교육문서 4종, 설정 페이지 | +9개 |
 
-**전체 테스트**: 212개 passing
+**전체 테스트**: 221개 passing
 
-### 미구현 항목 (우선순위 순)
+### 미구현 항목 (잔여)
 
-| 항목 | 분류 | 난이도 | 비고 |
-|------|------|--------|------|
-| 환자 관리 페이지 (`/patients`) | 필수 | 중 | 현재 Placeholder — 검진 입력 환자 선택 연동 필요 |
-| F4-4 카카오 알림톡 + SMS | 핵심 | 고 | 외부 API (카카오 bizm, NHN) 계약 필요 |
-| F4-7 월간 보고서 자동생성 | 유용 | 중 | APScheduler + PDF 생성 |
-| DLD/CKD 교육문서 템플릿 | 유용 | 저 | HTN/DM만 완성, 2종 추가 필요 |
-| VisitSchedule 리마인더 연동 | 핵심 | 중 | 모델 있음, 로직 미구현 |
-| 설정 페이지 (`/settings`) | 부가 | 중 | 현재 Placeholder |
-| Alembic 마이그레이션 최신화 확인 | 인프라 | 저 | Phase 4 모델 반영 여부 확인 필요 |
+| 항목 | 분류 | 비고 |
+|------|------|------|
+| 카카오 알림톡 + SMS | 핵심 | 외부 API (카카오 bizm, NHN) 계약 필요 |
+| 월간 보고서 자동 스케줄링 | 부가 | APScheduler 연동 (현재 수동 트리거) |
 
 ---
 
@@ -63,7 +60,7 @@ PRD: `docs/PRD.md` | 아키텍처: `docs/architecture.md` | 개발 로드맵: `d
 # Backend
 cd backend
 uv run python main.py                        # 서버 실행 (port 8000)
-uv run pytest tests/ -v                      # 테스트 전체 (212 tests)
+uv run pytest tests/ -v                      # 테스트 전체 (221 tests)
 uv run pytest tests/ -k "test_name"          # 특정 테스트
 uv run ruff check . && uv run ruff format .  # lint + format
 
@@ -118,21 +115,23 @@ uv run python scripts/seed_test_data.py  # 테스트 데이터 투입
 ```
 backend/
 ├── api/
-│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook/polypharmacy/screening)
+│   ├── v1.py              # 라우터 등록 (auth/patients/encounters/soap/documents/codebook/polypharmacy/screening/visits/reports)
 │   ├── patients.py        # CRUD + 암호화 검색
 │   ├── encounters.py      # 진료 기록 CRUD + 임상 요약
 │   ├── documents.py       # 문서 생성/저장/발급/다운로드 (8 endpoints)
 │   ├── codebook.py        # 약어 코드북 관리
 │   ├── polypharmacy.py    # 약물검토 API (POST /polypharmacy/review)
-│   └── screening.py       # 검진 API (classify-preview/results/dashboard/alerts) ✅ Phase 4
+│   ├── screening.py       # 검진 API (classify-preview/results/dashboard/alerts) ✅ Phase 4
+│   ├── visits.py          # 내원예약 CRUD API (4 endpoints) ✅ Phase 5
+│   └── reports.py         # 월간 보고서 PDF/JSON API ✅ Phase 5
 ├── core/
 │   ├── models/            # SQLAlchemy ORM (User/Patient/Encounter/Prescription/Document/ScreeningResult/FollowUpAlert/VisitSchedule)
-│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth/polypharmacy/screening)
+│   ├── schemas/           # Pydantic schemas (patient/encounter/document/codebook/auth/polypharmacy/screening/visit)
 │   └── llm/               # LLMService + HallucinationGuard + SubjectiveFilter
 ├── modules/
 │   ├── soap/              # SOAP 변환 (codebook/vitals/sick_day/prompts/parser/service)
 │   ├── documents/         # 문서 자동화 (assembler/guards/normalizer/prompts/parser/renderer/service)
-│   │   └── templates/     # Jinja2 HTML (진단서/소견서/확인서/의뢰서/건강진단서/lab_guidance/education_htn/education_dm/base)
+│   │   └── templates/     # Jinja2 HTML (진단서/소견서/확인서/의뢰서/건강진단서/lab_guidance/education_htn/education_dm/education_dld/education_ckd/monthly_report/base)
 │   ├── polypharmacy/      # Phase 3 ✅
 │   │   ├── data/          # ddi_pairs.json (15쌍) / renal_dosing.json (16약물) / sick_day_rules.json (14군)
 │   │   ├── ddi_checker.py       # DDIChecker — 양방향 인덱싱, severity 정렬
@@ -144,21 +143,20 @@ backend/
 │       ├── classifier.py        # AbnormalClassifier — 3단계 tiering (urgent/caution/normal)
 │       ├── follow_up.py         # FollowUpEngine — F/U 알림 후보 생성
 │       └── service.py           # ScreeningService — 분류+저장+대시보드 오케스트레이터
-└── tests/                 # 212 tests (26개 파일)
+└── tests/                 # 221 tests (28개 파일)
 
 frontend/src/
-├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical/polypharmacy/screening)
+├── api/                   # axios 클라이언트 (auth/patients/soap/documents/clinical/polypharmacy/screening/visits)
 ├── components/
 │   ├── soap/              # SOAP 관련 15개 컴포넌트
 │   ├── documents/         # Document 관련 8개 컴포넌트
 │   ├── polypharmacy/      # Phase 3 ✅ (DrugListPanel/DDIFindings/RenalDosingPanel/SickDayAlertsPanel)
-│   ├── screening/         # Phase 4 ✅ (DashboardMetricCard/LabResultsTable/FollowUpDashboard/ScreeningEntryForm)
+│   ├── screening/         # Phase 4~5 ✅ (DashboardMetricCard/LabResultsTable/FollowUpDashboard/ScreeningEntryForm/UpcomingVisitsCard)
 │   ├── Layout/            # AppLayout/Header/Sidebar
 │   └── ui/                # shadcn/ui 컴포넌트 (card/badge/tabs/... )
-├── hooks/                 # useAuth / useSoapStore / useDocumentStore / usePolypharmacyStore / useScreeningStore
-├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter / PolypharmacyReview / ScreeningPage
-│                          # (Placeholder 남음: /patients, /settings)
-└── types/index.ts         # 전체 타입 정의 (Phase 1~4 포함)
+├── hooks/                 # useAuth / useSoapStore / useDocumentStore / usePolypharmacyStore / useScreeningStore / useDebounce
+├── pages/                 # Login / Dashboard / SOAPWriter / DocumentWriter / PolypharmacyReview / ScreeningPage / PatientsPage / SettingsPage
+└── types/index.ts         # 전체 타입 정의 (Phase 1~5 포함)
 ```
 
 ---
@@ -178,6 +176,12 @@ frontend/src/
 | POST | `/api/v1/screening/results` | 검진 결과 저장 + 분류 + F/U 알림 자동 생성 |
 | GET | `/api/v1/screening/dashboard` | F/U 대시보드 (메트릭 + 알림목록 + 미방문) |
 | PATCH | `/api/v1/screening/alerts/{id}/resolve` | F/U 알림 완료 처리 |
+| POST | `/api/v1/visits` | 내원 예약 생성 |
+| GET | `/api/v1/visits` | 내원 예약 목록 (upcoming_only, patient_id 필터) |
+| PATCH | `/api/v1/visits/{id}` | 예약 수정/완료 처리 |
+| DELETE | `/api/v1/visits/{id}` | 예약 취소 (소프트 삭제) |
+| GET | `/api/v1/reports/monthly/stats` | 월간 통계 JSON |
+| GET | `/api/v1/reports/monthly` | 월간 보고서 PDF 다운로드 |
 
 ---
 
