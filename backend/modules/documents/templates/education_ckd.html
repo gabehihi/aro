@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="font-family: 'Malgun Gothic', sans-serif; font-size: 14pt; max-width: 21cm; padding: 2cm;">
+  <h1 style="font-size: 18pt; text-align: center;">만성콩팥병(CKD) 관리 안내</h1>
+  <p style="text-align: center; color: #666;">{{ patient_name }} 환자분께</p>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 신기능 수치 목표</h2>
+  <ul style="line-height: 2;">
+    <li>eGFR(사구체여과율): <b>60 mL/min/1.73m² 이상</b> 유지 목표</li>
+    <li>혈압: <b>130/80 mmHg 미만</b> (신기능 보호에 핵심)</li>
+    <li>단백뇨: 소변 ACR(알부민/크레아티닌비) <b>30 mg/g 미만</b></li>
+    {% if patient_has_dm %}<li>당뇨 동반: HbA1c <b>7.0% 미만</b> 유지로 신기능 악화 예방</li>{% endif %}
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 식사 관리</h2>
+  <ul style="line-height: 2;">
+    <li>단백질 제한: 육류·생선 하루 <b>적정량(g/kg/일 0.6~0.8)</b> — 의사 지시 따를 것</li>
+    <li>저칼륨 식단: 바나나·오렌지·토마토·감자 <b>줄이기</b></li>
+    <li>저인 식단: 유제품·견과류·콜라음료 <b>줄이기</b></li>
+    <li>저염식: 소금 하루 <b>5g 이하</b> (신장에 부담 증가)</li>
+    {% if patient_has_dm %}<li>당뇨 동반: 저당+저칼륨 동시 적용 — 사과·배 소량 허용, 바나나·포도 금지</li>{% endif %}
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 약물 주의</h2>
+  <ul style="line-height: 2;">
+    <li><b>NSAIDs(진통소염제) 복용 금지</b>: 이부프로펜·나프록센 — 신기능 악화</li>
+    <li>조영제 검사 전 반드시 신기능 확인 후 의사에게 알릴 것</li>
+    <li>건강기능식품·한약 복용 전 반드시 의사와 상담</li>
+    <li>메트포르민(당뇨약): eGFR 30 미만 시 중단 필요 — 의사 확인</li>
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 추적 검사</h2>
+  <ul style="line-height: 2;">
+    <li>혈액검사(크레아티닌·eGFR·전해질): <b>3개월마다</b></li>
+    <li>소변검사(단백뇨·ACR): <b>3~6개월마다</b></li>
+    <li>혈압 자가 측정: <b>매일</b> 기록 권고</li>
+  </ul>
+
+  {% if personalized_note %}
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 담당 의사 메모</h2>
+  <p style="line-height: 1.8; white-space: pre-line;">{{ personalized_note }}</p>
+  {% endif %}
+
+  <div style="margin-top: 2em; text-align: right; font-size: 12pt; color: #666;">
+    {{ clinic_name }} | {{ issue_date }}
+  </div>
+</div>
+{% endblock %}

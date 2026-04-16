@@ -4,11 +4,12 @@ import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { AppLayout } from "@/components/Layout/AppLayout"
 import { Login } from "@/pages/Login"
 import { Dashboard } from "@/pages/Dashboard"
-import { Placeholder } from "@/pages/Placeholder"
 import { SOAPWriter } from "@/pages/SOAPWriter"
 import { DocumentWriter } from "@/pages/DocumentWriter"
 import { PolypharmacyReview } from "@/pages/PolypharmacyReview"
 import ScreeningPage from "@/pages/ScreeningPage"
+import PatientsPage from "@/pages/PatientsPage"
+import SettingsPage from "@/pages/SettingsPage"
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,11 +39,11 @@ export default function App() {
               />
               <Route
                 path="patients"
-                element={<Placeholder title="환자 관리" />}
+                element={<PatientsPage />}
               />
               <Route
                 path="settings"
-                element={<Placeholder title="설정" />}
+                element={<SettingsPage />}
               />
             </Route>
           </Route>

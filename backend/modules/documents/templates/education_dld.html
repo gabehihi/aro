@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="font-family: 'Malgun Gothic', sans-serif; font-size: 14pt; max-width: 21cm; padding: 2cm;">
+  <h1 style="font-size: 18pt; text-align: center;">이상지질혈증 관리 안내</h1>
+  <p style="text-align: center; color: #666;">{{ patient_name }} 환자분께</p>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 콜레스테롤 목표</h2>
+  <ul style="line-height: 2;">
+    <li>LDL(나쁜 콜레스테롤): <b>130 mg/dL 미만</b></li>
+    {% if patient_has_dm %}<li>당뇨병 동반 시 LDL: <b>100 mg/dL 미만</b> (고위험군 70 미만)</li>{% endif %}
+    {% if patient_has_ckd %}<li>만성콩팥병 동반 시 LDL: <b>70 mg/dL 미만</b> 권고</li>{% endif %}
+    <li>HDL(좋은 콜레스테롤): <b>40 mg/dL 이상</b> (남), <b>50 mg/dL 이상</b> (여)</li>
+    <li>중성지방(TG): <b>150 mg/dL 미만</b></li>
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 식사 관리</h2>
+  <ul style="line-height: 2;">
+    <li>포화지방 제한: 삼겹살·버터·치즈·코코넛오일 <b>줄이기</b></li>
+    <li>트랜스지방 금지: 마가린·쇼트닝·튀김류 <b>피하기</b></li>
+    <li>등푸른 생선 섭취: 고등어·삼치·연어 <b>주 2회 이상</b></li>
+    <li>식이섬유 섭취: 채소·콩·귀리·현미 <b>충분히</b></li>
+    {% if patient_has_dm %}<li>당뇨 동반: 단순당(흰밥·과자·단음료) <b>엄격히 제한</b></li>{% endif %}
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 생활 습관</h2>
+  <ul style="line-height: 2;">
+    <li>유산소 운동: 빠르게 걷기·자전거 <b>주 150분 이상</b></li>
+    <li>금연: 흡연은 HDL을 낮추고 심혈관 위험 <b>크게 증가</b></li>
+    <li>절주: 알코올은 중성지방을 높임, <b>하루 2잔 이하</b></li>
+    <li>체중 감량: 5~10% 감량 시 LDL·TG 유의미하게 개선</li>
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 약 복용 안내</h2>
+  <ul style="line-height: 2;">
+    <li>스타틴(콜레스테롤약)은 <b>저녁에</b> 복용하면 효과적</li>
+    <li>근육통·갈색뇨 발생 시 즉시 내원하세요 (횡문근융해증 주의)</li>
+    <li>6주 후 혈액 검사로 약 효과를 확인합니다</li>
+  </ul>
+
+  {% if personalized_note %}
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 담당 의사 메모</h2>
+  <p style="line-height: 1.8; white-space: pre-line;">{{ personalized_note }}</p>
+  {% endif %}
+
+  <div style="margin-top: 2em; text-align: right; font-size: 12pt; color: #666;">
+    {{ clinic_name }} | {{ issue_date }}
+  </div>
+</div>
+{% endblock %}
