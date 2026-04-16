@@ -326,3 +326,79 @@ export interface PolypharmacyReport {
   llm_meta: LLMMeta
   warnings: PolypharmacyWarning[]
 }
+
+// ── Phase 4: Screening & Follow-up ───────────────────────────────
+
+export interface AbnormalFinding {
+  name: string
+  value: string | number
+  unit: string
+  tier: "urgent" | "caution" | "normal"
+  ref_range: string
+  message: string
+}
+
+export interface ClassifyPreviewRequest {
+  results: Record<string, string | number>
+  patient_sex?: "M" | "F"
+}
+
+export interface ClassifyPreviewResponse {
+  findings: AbnormalFinding[]
+  urgent_count: number
+  caution_count: number
+  normal_count: number
+}
+
+export interface ScreeningResultCreate {
+  patient_id: string
+  screening_type: "국가건강검진" | "암검진" | "생애전환기"
+  screening_date: string   // "YYYY-MM-DD"
+  results: Record<string, string | number>
+  patient_has_dm?: boolean
+}
+
+export interface ScreeningResultResponse {
+  id: string
+  patient_id: string
+  screening_type: string
+  screening_date: string
+  results: Record<string, string | number>
+  abnormal_findings: AbnormalFinding[]
+  follow_up_required: boolean
+  created_at: string
+}
+
+export interface FollowUpAlertItem {
+  id: string
+  patient_id: string
+  patient_name: string
+  chart_no: string
+  alert_type: string
+  item: string
+  last_value: string | null
+  last_date: string | null
+  due_date: string
+  days_overdue: number
+  priority: "urgent" | "due" | "upcoming"
+  resolved: boolean
+}
+
+export interface DashboardSummary {
+  today_appointments: number
+  followup_needed: number
+  noshow_last_week: number
+  screening_incomplete: number
+}
+
+export interface DashboardResponse {
+  summary: DashboardSummary
+  followup_alerts: FollowUpAlertItem[]
+  noshow_patients: Array<{
+    patient_id: string
+    patient_name: string
+    chart_no: string
+    last_visit: string | null
+    days_since_last_visit: number | null
+  }>
+}
