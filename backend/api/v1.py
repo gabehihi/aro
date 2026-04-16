@@ -9,6 +9,7 @@ from api.encounters import router as encounters_router
 from api.patients import router as patients_router
 from api.polypharmacy import router as polypharmacy_router
 from api.screening import router as screening_router
+from api.visits import router as visits_router
 from core.database import get_db
 from core.models.user import User
 from core.schemas.auth import TokenResponse, UserResponse
@@ -21,6 +22,7 @@ router.include_router(encounters_router)
 router.include_router(documents_router)
 router.include_router(polypharmacy_router)
 router.include_router(screening_router)
+router.include_router(visits_router)
 
 
 @router.post("/auth/login", response_model=TokenResponse, summary="로그인 (JWT 발급)")
