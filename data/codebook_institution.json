@@ -1,0 +1,43 @@
+{
+  "diagnosis": {
+    "hHTN": {"full": "고혈압 (hypertensive, 보건소 고혈압 등록관리)", "kcd": "I10"},
+    "hDM": {"full": "당뇨병 (보건소 당뇨 등록관리)", "kcd": "E11"},
+    "MetS": {"full": "Metabolic Syndrome (대사증후군)", "kcd": "E88.81"},
+    "preDM": {"full": "Pre-diabetes (당뇨전단계/내당능장애)", "kcd": "R73.0"},
+    "preHTN": {"full": "Pre-hypertension (고혈압전단계)", "kcd": "R03.0"}
+  },
+  "medication": {
+    "met500": {"full": "Metformin 500mg (메트포르민 500mg)", "atc": "A10BA02"},
+    "met1000": {"full": "Metformin 1000mg (메트포르민 1000mg)", "atc": "A10BA02"},
+    "amlo5": {"full": "Amlodipine 5mg (암로디핀 5mg)", "atc": "C08CA01"},
+    "amlo10": {"full": "Amlodipine 10mg (암로디핀 10mg)", "atc": "C08CA01"},
+    "los50": {"full": "Losartan 50mg (로사르탄 50mg)", "atc": "C09CA01"},
+    "los100": {"full": "Losartan 100mg (로사르탄 100mg)", "atc": "C09CA01"},
+    "ator10": {"full": "Atorvastatin 10mg (아토르바스타틴 10mg)", "atc": "C10AA05"},
+    "ator20": {"full": "Atorvastatin 20mg (아토르바스타틴 20mg)", "atc": "C10AA05"},
+    "rosu5": {"full": "Rosuvastatin 5mg (로수바스타틴 5mg)", "atc": "C10AA07"},
+    "rosu10": {"full": "Rosuvastatin 10mg (로수바스타틴 10mg)", "atc": "C10AA07"}
+  },
+  "lab": {
+    "CBC": {"full": "Complete Blood Count (일반혈액검사)", "unit": ""},
+    "LFT": {"full": "Liver Function Test (간기능검사)", "unit": ""},
+    "RFT": {"full": "Renal Function Test (신기능검사)", "unit": ""},
+    "LP": {"full": "Lipid Panel (지질검사)", "unit": ""},
+    "TFT": {"full": "Thyroid Function Test (갑상선기능검사)", "unit": ""},
+    "OGTT": {"full": "Oral Glucose Tolerance Test (경구당부하검사)", "unit": "mg/dL"}
+  },
+  "vital": {},
+  "procedure": {
+    "건검": {"full": "국가건강검진"},
+    "추검": {"full": "추적검사 (Follow-up lab)"},
+    "암검": {"full": "국가암검진"}
+  },
+  "clinical": {
+    "초진": {"full": "Initial Visit (초진)"},
+    "재진": {"full": "Follow-up Visit (재진)"},
+    "등록": {"full": "보건소 만성질환 등록"},
+    "전원": {"full": "Transfer to Higher Hospital (상급병원 전원)"},
+    "의뢰": {"full": "Referral (진료의뢰)"},
+    "회송": {"full": "Return Referral (회송)"}
+  }
+}

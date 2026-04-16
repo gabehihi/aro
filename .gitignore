@@ -36,3 +36,7 @@ Thumbs.db
 # Data (private patient data)
 data/private/
 .worktrees/
+
+# Claude Code internal
+backend/.claude/
+docs/superpowers/
