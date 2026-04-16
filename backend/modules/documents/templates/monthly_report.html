@@ -1,0 +1,55 @@
+{# backend/modules/documents/templates/monthly_report.html #}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<style>
+  @page { size: A4; margin: 2cm; }
+  body { font-family: "Noto Sans CJK KR", "맑은 고딕", sans-serif; font-size: 11pt; line-height: 1.6; color: #333; }
+  h1 { font-size: 18pt; text-align: center; border-bottom: 2px solid #333; padding-bottom: 8px; margin-bottom: 1.5em; }
+  h2 { font-size: 13pt; color: #2c3e50; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-top: 1.5em; }
+  table { width: 100%; border-collapse: collapse; margin: 0.5em 0 1em; }
+  th { background: #f0f0f0; padding: 8px; border: 1px solid #ccc; text-align: center; }
+  td { padding: 8px; border: 1px solid #ccc; text-align: center; }
+  .highlight { background: #e8f4fd; font-weight: bold; }
+  .footer { margin-top: 3em; text-align: right; font-size: 10pt; color: #666; border-top: 1px solid #ddd; padding-top: 0.5em; }
+</style>
+</head>
+<body>
+  <h1>{{ year }}년 {{ month }}월 진료 현황 월간 보고서</h1>
+
+  <h2>1. 환자 현황</h2>
+  <table>
+    <tr><th>구분</th><th>건수</th></tr>
+    <tr><td>총 등록 환자</td><td class="highlight">{{ stats.total_patients }}명</td></tr>
+    <tr><td>이번 달 신규 등록</td><td>{{ stats.new_patients_this_month }}명</td></tr>
+    <tr><td>이번 달 내원 환자</td><td>{{ stats.active_patients_this_month }}명</td></tr>
+  </table>
+
+  <h2>2. 진료 현황</h2>
+  <table>
+    <tr><th>구분</th><th>건수</th></tr>
+    <tr><td>총 진료 기록</td><td>{{ stats.total_encounters }}건</td></tr>
+    <tr><td>이번 달 진료</td><td class="highlight">{{ stats.encounters_this_month }}건</td></tr>
+    <tr><td>문서 발급 (이번 달)</td><td>{{ stats.documents_issued_this_month }}건</td></tr>
+  </table>
+
+  <h2>3. F/U 현황</h2>
+  <table>
+    <tr><th>구분</th><th>건수</th></tr>
+    <tr><td>이번 달 F/U 알림 발생</td><td>{{ stats.followup_alerts_this_month }}건</td></tr>
+    <tr><td>F/U 완료 건수</td><td>{{ stats.followup_resolved_this_month }}건</td></tr>
+    <tr><td>F/U 완료율</td><td class="highlight">{{ stats.followup_resolution_rate }}%</td></tr>
+  </table>
+
+  <h2>4. 검진 현황</h2>
+  <table>
+    <tr><th>구분</th><th>건수</th></tr>
+    <tr><td>검진 결과 입력 (이번 달)</td><td>{{ stats.screenings_this_month }}건</td></tr>
+    <tr><td>이상소견 발견</td><td>{{ stats.abnormal_screenings }}건</td></tr>
+    <tr><td>이상소견 비율</td><td class="highlight">{{ stats.abnormal_rate }}%</td></tr>
+  </table>
+
+  <div class="footer">{{ clinic_name }} | 보고서 생성일: {{ generated_date }}</div>
+</body>
+</html>
