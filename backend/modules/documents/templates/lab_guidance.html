@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="font-family: 'Malgun Gothic', sans-serif; font-size: 14pt; max-width: 21cm; padding: 2cm;">
+  <h1 style="font-size: 18pt; text-align: center; margin-bottom: 1em;">검사 결과 안내문</h1>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5em;">
+    <tr>
+      <td style="padding: 6px; border: 1px solid #ccc; width: 25%;"><b>성명</b></td>
+      <td style="padding: 6px; border: 1px solid #ccc;">{{ patient_name }}</td>
+      <td style="padding: 6px; border: 1px solid #ccc; width: 25%;"><b>검진일</b></td>
+      <td style="padding: 6px; border: 1px solid #ccc;">{{ screening_date }}</td>
+    </tr>
+  </table>
+
+  <h2 style="font-size: 15pt; border-bottom: 2px solid #333; margin-bottom: 0.5em;">검사 결과</h2>
+  <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5em;">
+    <thead>
+      <tr style="background: #f0f0f0;">
+        <th style="padding: 8px; border: 1px solid #ccc; text-align: left;">검사 항목</th>
+        <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">결과값</th>
+        <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">정상 기준</th>
+        <th style="padding: 8px; border: 1px solid #ccc; text-align: center;">판정</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for finding in findings %}
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ccc;">{{ finding.name }}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">{{ finding.value }} {{ finding.unit }}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;">{{ finding.ref_range }}</td>
+        <td style="padding: 8px; border: 1px solid #ccc; text-align: center;
+            color: {% if finding.tier == 'urgent' %}#c0392b{% elif finding.tier == 'caution' %}#d35400{% else %}#27ae60{% endif %};">
+          {% if finding.tier == 'urgent' %}🔴 즉시 확인{% elif finding.tier == 'caution' %}🟡 추적 관찰{% else %}🟢 정상{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if guidance_text %}
+  <h2 style="font-size: 15pt; border-bottom: 2px solid #333; margin-bottom: 0.5em;">안내 말씀</h2>
+  <div style="font-size: 14pt; line-height: 1.8; white-space: pre-line;">{{ guidance_text }}</div>
+  {% endif %}
+
+  <div style="margin-top: 2em; text-align: right; font-size: 12pt; color: #666;">
+    {{ clinic_name }} | {{ issue_date }}
+  </div>
+</div>
+{% endblock %}

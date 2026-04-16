@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="font-family: 'Malgun Gothic', sans-serif; font-size: 14pt; max-width: 21cm; padding: 2cm;">
+  <h1 style="font-size: 18pt; text-align: center;">당뇨병 관리 안내</h1>
+  <p style="text-align: center; color: #666;">{{ patient_name }} 환자분께</p>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 혈당 조절 목표</h2>
+  <ul style="line-height: 2;">
+    <li>당화혈색소(HbA1c): <b>7.0% 미만</b></li>
+    <li>공복 혈당: <b>80~130 mg/dL</b></li>
+    <li>식후 2시간 혈당: <b>180 mg/dL 미만</b></li>
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 식사 관리</h2>
+  <ul style="line-height: 2;">
+    <li>규칙적인 식사: <b>하루 3끼</b>, 일정한 시간에</li>
+    <li>탄수화물 제한: 흰쌀밥·흰빵·떡·과자 <b>줄이기</b></li>
+    <li>채소류 충분히 섭취, 저당 과일(사과·배 반 개)</li>
+    {% if patient_has_ckd %}<li>콩팥병 동반: 저칼륨 과일(사과·배)만 소량 허용</li>{% endif %}
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 운동 안내</h2>
+  <ul style="line-height: 2;">
+    <li>유산소 운동: 주 <b>150분 이상</b> (빠르게 걷기, 자전거)</li>
+    <li>근력 운동: 주 <b>2~3회</b></li>
+    <li>저혈당 예방: 운동 전 혈당 <b>100 mg/dL 미만</b>이면 간식 섭취</li>
+  </ul>
+
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 주의 사항</h2>
+  <ul style="line-height: 2;">
+    <li>저혈당 증상(떨림·식은땀·어지럼증) 시 즉시 사탕/주스 섭취</li>
+    <li>발 상처 주의: 매일 발 확인, 맨발 금지</li>
+    <li>검사: HbA1c <b>3개월마다</b>, 신기능·눈 검사 <b>연 1회</b></li>
+  </ul>
+
+  {% if personalized_note %}
+  <h2 style="font-size: 15pt; color: #2c3e50; margin-top: 1.5em;">✓ 담당 의사 메모</h2>
+  <p style="line-height: 1.8; white-space: pre-line;">{{ personalized_note }}</p>
+  {% endif %}
+
+  <div style="margin-top: 2em; text-align: right; font-size: 12pt; color: #666;">
+    {{ clinic_name }} | {{ issue_date }}
+  </div>
+</div>
+{% endblock %}
