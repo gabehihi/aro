@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,8 +30,6 @@ async def _make_user(db: AsyncSession) -> tuple[User, str]:
 
 
 async def _make_patient(db: AsyncSession, chart_no: str = "AUDIT001") -> Patient:
-    from datetime import date
-
     patient = Patient(
         chart_no=chart_no,
         name="감사환자",
