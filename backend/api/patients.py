@@ -1,9 +1,10 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.audit import log_action
 from core.database import get_db
 from core.models.patient import Patient
 from core.models.user import User
@@ -21,21 +22,21 @@ router = APIRouter(prefix="/patients", tags=["patients"])
 @router.post("", response_model=PatientResponse, status_code=status.HTTP_201_CREATED)
 async def create_patient(
     body: PatientCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> PatientResponse:
-    # chart_no 중복 체크
     exists = await db.execute(select(Patient).where(Patient.chart_no == body.chart_no))
     if exists.scalar_one_or_none():
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail=f"차트번호 '{body.chart_no}'가 이미 존재합니다",
         )
-
     patient = Patient(**body.model_dump())
     db.add(patient)
     await db.commit()
     await db.refresh(patient)
+    await log_action(db, current_user, "create", "patient", str(patient.id), request=request)
     return PatientResponse.model_validate(patient)
 
 
@@ -48,15 +49,11 @@ async def list_patients(
     current_user: User = Depends(get_current_user),
 ) -> PatientListResponse:
     if q:
-        # chart_no는 평문 검색 가능
         result = await db.execute(select(Patient).where(Patient.chart_no.contains(q)))
         chart_matches = list(result.scalars().all())
-
-        # name은 암호화되어 있으므로 전체 로드 후 Python 필터링
         all_result = await db.execute(select(Patient))
         all_patients = all_result.scalars().all()
         name_matches = [p for p in all_patients if q in p.name and p not in chart_matches]
-
         patients = chart_matches + name_matches
         total = len(patients)
         start = (page - 1) * size
@@ -64,7 +61,6 @@ async def list_patients(
     else:
         total_result = await db.execute(select(func.count(Patient.id)))
         total = total_result.scalar_one()
-
         query = (
             select(Patient)
             .order_by(Patient.created_at.desc())
@@ -73,7 +69,6 @@ async def list_patients(
         )
         result = await db.execute(query)
         patients = list(result.scalars().all())
-
     return PatientListResponse(
         items=[PatientResponse.model_validate(p) for p in patients],
         total=total,
@@ -85,6 +80,7 @@ async def list_patients(
 @router.get("/{patient_id}", response_model=PatientResponse)
 async def get_patient(
     patient_id: uuid.UUID,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> PatientResponse:
@@ -92,6 +88,7 @@ async def get_patient(
     patient = result.scalar_one_or_none()
     if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="환자를 찾을 수 없습니다")
+    await log_action(db, current_user, "read", "patient", str(patient_id), request=request)
     return PatientResponse.model_validate(patient)
 
 
@@ -99,6 +96,7 @@ async def get_patient(
 async def update_patient(
     patient_id: uuid.UUID,
     body: PatientUpdate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> PatientResponse:
@@ -106,13 +104,20 @@ async def update_patient(
     patient = result.scalar_one_or_none()
     if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="환자를 찾을 수 없습니다")
-
     update_data = body.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(patient, field, value)
-
     await db.commit()
     await db.refresh(patient)
+    await log_action(
+        db,
+        current_user,
+        "update",
+        "patient",
+        str(patient_id),
+        details={"updated_fields": list(update_data.keys())},
+        request=request,
+    )
     return PatientResponse.model_validate(patient)
 
 
@@ -126,6 +131,5 @@ async def delete_patient(
     patient = result.scalar_one_or_none()
     if not patient:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="환자를 찾을 수 없습니다")
-
     await db.delete(patient)
     await db.commit()
