@@ -271,7 +271,7 @@ async def download_document(
         "download",
         "document",
         str(document_id),
-        details={"format": format, "doc_type": doc_type.value},
+        details={"format": format, "doc_type": doc_type.value, "patient_id": str(doc.patient_id)},
         request=request,
     )
 
