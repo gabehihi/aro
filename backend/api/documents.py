@@ -5,11 +5,12 @@ import uuid
 from datetime import UTC, datetime
 from urllib.parse import quote
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.audit import log_action
 from core.database import get_db
 from core.llm.service import LLMService
 from core.models.document import MedicalDocument
@@ -198,6 +199,7 @@ async def update_document(
 @router.post("/{document_id}/issue", response_model=DocumentResponse)
 async def issue_document(
     document_id: uuid.UUID,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> DocumentResponse:
@@ -219,12 +221,22 @@ async def issue_document(
     doc.issued_at = datetime.now(tz=UTC)
     await db.commit()
     await db.refresh(doc)
+    await log_action(
+        db,
+        current_user,
+        "issue",
+        "document",
+        str(document_id),
+        details={"doc_type": str(doc.doc_type), "patient_id": str(doc.patient_id)},
+        request=request,
+    )
     return DocumentResponse.model_validate(doc)
 
 
 @router.get("/{document_id}/download")
 async def download_document(
     document_id: uuid.UUID,
+    request: Request,
     format: str = Query(default="pdf", pattern="^(pdf|docx)$"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
@@ -253,7 +265,16 @@ async def download_document(
         media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         filename = f"{doc_type.value}_{document_id}.docx"
 
-    # RFC 5987: 한국어 파일명을 UTF-8 percent-encoding으로 전달
+    await log_action(
+        db,
+        current_user,
+        "download",
+        "document",
+        str(document_id),
+        details={"format": format, "doc_type": doc_type.value},
+        request=request,
+    )
+
     encoded_filename = quote(filename, safe="")
     content_disposition = f"attachment; filename=\"document\"; filename*=UTF-8''{encoded_filename}"
 
