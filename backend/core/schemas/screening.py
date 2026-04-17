@@ -17,16 +17,16 @@ class AbnormalFinding(BaseModel):
     name: str
     value: Any
     unit: str
-    tier: str          # "urgent" | "caution" | "normal"
+    tier: str  # "urgent" | "caution" | "normal"
     ref_range: str
     message: str
 
 
 class ScreeningResultCreate(BaseModel):
     patient_id: UUID
-    screening_type: str       # "국가건강검진" | "암검진" | "생애전환기"
+    screening_type: str  # "국가건강검진" | "암검진" | "생애전환기"
     screening_date: date
-    results: dict[str, Any]   # {"eGFR": 45, "HbA1c": 8.2, ...}
+    results: dict[str, Any]  # {"eGFR": 45, "HbA1c": 8.2, ...}
     patient_has_dm: bool = False
 
 
@@ -45,7 +45,7 @@ class ScreeningResultResponse(BaseModel):
 
 class ClassifyPreviewRequest(BaseModel):
     results: dict[str, Any]
-    patient_sex: str = "M"    # "M" | "F"
+    patient_sex: str = "M"  # "M" | "F"
 
 
 class ClassifyPreviewResponse(BaseModel):
@@ -83,3 +83,25 @@ class FollowUpDashboardResponse(BaseModel):
     summary: DashboardSummary
     followup_alerts: list[FollowUpAlertResponse]
     noshow_patients: list[dict]
+
+
+class BulkUploadRow(BaseModel):
+    """일괄 업로드 결과의 한 행."""
+
+    chart_no: str
+    screening_date: date
+    results: dict[str, Any]
+    patient_id: UUID | None = None
+    error: str | None = None
+    findings: list[AbnormalFinding] = []
+    urgent_count: int = 0
+    caution_count: int = 0
+
+
+class BulkUploadResponse(BaseModel):
+    """일괄 업로드 전체 결과."""
+
+    total_rows: int
+    success_count: int
+    error_count: int
+    rows: list[BulkUploadRow]
