@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import csv
+import datetime as _dt
+from datetime import date
 from io import BytesIO, StringIO
 from uuid import UUID
 
@@ -140,14 +142,13 @@ async def upload_bulk_screening(
     필수 열: chart_no, screening_date (YYYY-MM-DD 형식)
     검사값 열: eGFR, HbA1c, FBS, Total_Cholesterol, LDL 등 (숫자 가능한 열은 자동 포함)
     """
-    from datetime import date as date_type
-
     filename = file.filename or ""
     content = await file.read()
 
-    if filename.endswith(".xlsx"):
+    fn_lower = filename.lower()
+    if fn_lower.endswith(".xlsx"):
         raw_rows = _parse_excel_content(content)
-    elif filename.endswith(".csv"):
+    elif fn_lower.endswith(".csv"):
         raw_rows = _parse_csv_content(content)
     else:
         raise HTTPException(status_code=400, detail=".xlsx 또는 .csv 파일만 지원합니다")
@@ -156,31 +157,36 @@ async def upload_bulk_screening(
 
     for raw in raw_rows:
         chart_no = str(raw.get("chart_no") or "").strip()
-        screening_date_str = str(raw.get("screening_date") or "").strip()
+        raw_date = raw.get("screening_date")
 
-        if not chart_no or not screening_date_str:
+        if not chart_no or raw_date is None or str(raw_date).strip() == "":
             results.append(
                 BulkUploadRow(
                     chart_no=chart_no,
-                    screening_date=date_type.today(),
+                    screening_date=date.today(),
                     results={},
                     error="chart_no 또는 screening_date 누락",
                 )
             )
             continue
 
-        try:
-            screening_date = date_type.fromisoformat(screening_date_str)
-        except ValueError:
-            results.append(
-                BulkUploadRow(
-                    chart_no=chart_no,
-                    screening_date=date_type.today(),
-                    results={},
-                    error=f"날짜 형식 오류 (YYYY-MM-DD 필요): {screening_date_str}",
+        if isinstance(raw_date, _dt.datetime):
+            screening_date = raw_date.date()
+        elif isinstance(raw_date, _dt.date):
+            screening_date = raw_date
+        else:
+            try:
+                screening_date = date.fromisoformat(str(raw_date or "").strip())
+            except ValueError:
+                results.append(
+                    BulkUploadRow(
+                        chart_no=chart_no,
+                        screening_date=date.today(),
+                        results={},
+                        error=f"날짜 형식 오류 (YYYY-MM-DD 필요): {raw_date}",
+                    )
                 )
-            )
-            continue
+                continue
 
         patient_result = await db.execute(select(Patient).where(Patient.chart_no == chart_no))
         patient = patient_result.scalar_one_or_none()
@@ -202,7 +208,7 @@ async def upload_bulk_screening(
         }
 
         try:
-            await _svc.save_and_classify(
+            saved = await _svc.save_and_classify(
                 db,
                 ScreeningResultCreate(
                     patient_id=patient.id,
@@ -211,16 +217,17 @@ async def upload_bulk_screening(
                     results=lab_results,
                 ),
             )
-            preview = _svc.classify_preview(lab_results, str(patient.sex))
+            urgent = sum(1 for f in saved.abnormal_findings if f.get("tier") == "urgent")
+            caution = sum(1 for f in saved.abnormal_findings if f.get("tier") == "caution")
             results.append(
                 BulkUploadRow(
                     chart_no=chart_no,
                     screening_date=screening_date,
                     results=lab_results,
                     patient_id=patient.id,
-                    findings=preview.findings,
-                    urgent_count=preview.urgent_count,
-                    caution_count=preview.caution_count,
+                    findings=saved.abnormal_findings,
+                    urgent_count=urgent,
+                    caution_count=caution,
                 )
             )
         except Exception as exc:
