@@ -11,6 +11,7 @@ from config import get_settings
 from core import database as db_module
 from core.models import Base, User
 from core.models.enums import UserRole
+from core.scheduler import setup_scheduler
 from core.security import hash_password
 
 logging.basicConfig(level=logging.INFO)
@@ -52,9 +53,15 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
     await _seed_admin()
 
+    scheduler = setup_scheduler()
+    scheduler.start()
+    logger.info("스케줄러 시작 (daily_db_backup, monthly_report_archive)")
+
     yield
 
     # Shutdown
+    scheduler.shutdown(wait=False)
+    logger.info("스케줄러 종료")
     await db_module.engine.dispose()
     logger.info("DB 연결 종료")
 
