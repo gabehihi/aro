@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import { useDocumentStore } from "@/hooks/useDocumentStore"
 import { PatientSelector } from "@/components/documents/PatientSelector"
 import { DocumentTypeSelector } from "@/components/documents/DocumentTypeSelector"
@@ -11,10 +12,20 @@ import {
   generateDocument,
   getSourceData,
   saveDocument,
+  downloadDocument,
+  issueDocument,
+  updateDocument,
 } from "@/api/documents"
+import type { MedicalDocument } from "@/types"
 
 export function DocumentWriter() {
   const store = useDocumentStore()
+  const [savedDocument, setSavedDocument] = useState<MedicalDocument | null>(null)
+  const [historyRefreshToken, setHistoryRefreshToken] = useState(0)
+
+  useEffect(() => {
+    setSavedDocument(null)
+  }, [store.selectedPatient?.id, store.docType, store.editedText])
 
   const canGenerate =
     !!store.selectedPatient && !!store.docType && !store.isGenerating
@@ -44,11 +55,11 @@ export function DocumentWriter() {
     }
   }
 
-  const handleSave = async () => {
-    if (!store.selectedPatient || !store.docType || !store.generatedResult) return
+  const handleSave = async (): Promise<MedicalDocument | null> => {
+    if (!store.selectedPatient || !store.docType || !store.generatedResult) return null
     store.setIsSaving(true)
     try {
-      await saveDocument({
+      const saved = await saveDocument({
         patient_id: store.selectedPatient.id,
         encounter_id: store.selectedEncounter?.id ?? null,
         doc_type: store.docType,
@@ -56,9 +67,13 @@ export function DocumentWriter() {
         content: store.generatedResult.content,
         generated_text: store.editedText,
       })
+      setSavedDocument(saved)
+      setHistoryRefreshToken((prev) => prev + 1)
       store.setError(null)
+      return saved
     } catch (err) {
       store.setError(err instanceof Error ? err.message : "저장 실패")
+      return null
     } finally {
       store.setIsSaving(false)
     }
@@ -67,17 +82,76 @@ export function DocumentWriter() {
   const handleDownload = async (format: "pdf" | "docx") => {
     if (!store.generatedResult) return
     try {
-      // For direct download without saved doc, we'd need a different approach
-      // For now, save first then download
-      const blob = new Blob([store.editedText], { type: "text/plain" })
+      let documentId = savedDocument?.id ?? null
+      if (!documentId) {
+        const saved = await handleSave()
+        documentId = saved?.id ?? null
+      }
+      if (!documentId) return
+
+      const blob = await downloadDocument(documentId, format)
       const url = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
       a.download = `${store.docType ?? "document"}.${format === "pdf" ? "pdf" : "docx"}`
       a.click()
       URL.revokeObjectURL(url)
-    } catch {
-      store.setError("다운로드 실패")
+    } catch (err) {
+      store.setError(err instanceof Error ? err.message : "다운로드 실패")
+    }
+  }
+
+  const handleMarkReviewed = async () => {
+    if (!store.generatedResult) return
+    store.setIsIssuing(true)
+    try {
+      const ensured = savedDocument ?? (await handleSave())
+      if (!ensured) return
+
+      if (ensured.status === "reviewed" || ensured.status === "issued") {
+        setSavedDocument(ensured)
+        return
+      }
+
+      const updated = await updateDocument(ensured.id, {
+        generated_text: store.editedText,
+        status: "reviewed",
+      })
+      setSavedDocument(updated)
+      setHistoryRefreshToken((prev) => prev + 1)
+      store.setError(null)
+    } catch (err) {
+      store.setError(err instanceof Error ? err.message : "검토 완료 처리 실패")
+    } finally {
+      store.setIsIssuing(false)
+    }
+  }
+
+  const handleIssue = async () => {
+    if (!store.generatedResult) return
+    store.setIsIssuing(true)
+    try {
+      let ensured = savedDocument ?? (await handleSave())
+      if (!ensured) return
+
+      if (ensured.status === "draft") {
+        ensured = await updateDocument(ensured.id, {
+          generated_text: store.editedText,
+          status: "reviewed",
+        })
+      }
+
+      if (ensured.status !== "issued") {
+        ensured = await issueDocument(ensured.id)
+      }
+
+      setSavedDocument(ensured)
+      setHistoryRefreshToken((prev) => prev + 1)
+      store.setError(null)
+    } catch (err) {
+      store.setError(err instanceof Error ? err.message : "문서 발급 실패")
+    } finally {
+      store.setIsIssuing(false)
     }
   }
 
@@ -108,9 +182,13 @@ export function DocumentWriter() {
           hasUnresolvedErrors={store.generatedResult?.has_unresolved_errors ?? false}
           isGenerating={store.isGenerating}
           isSaving={store.isSaving}
+          isIssuing={store.isIssuing}
           canGenerate={canGenerate}
+          status={savedDocument?.status ?? null}
           onGenerate={handleGenerate}
           onSave={handleSave}
+          onMarkReviewed={handleMarkReviewed}
+          onIssue={handleIssue}
           onDownloadPdf={() => handleDownload("pdf")}
           onDownloadDocx={() => handleDownload("docx")}
         />
@@ -134,7 +212,10 @@ export function DocumentWriter() {
 
       {/* Right panel (40%) */}
       <div className="w-2/5 overflow-y-auto">
-        <DocumentHistory patientId={store.selectedPatient?.id ?? null} />
+        <DocumentHistory
+          patientId={store.selectedPatient?.id ?? null}
+          refreshToken={historyRefreshToken}
+        />
       </div>
     </div>
   )

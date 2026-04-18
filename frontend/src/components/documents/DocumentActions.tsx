@@ -1,14 +1,19 @@
 import { Button } from "@/components/ui/button"
-import { Download, FileCheck, Loader2, Save, Sparkles } from "lucide-react"
+import { CheckCheck, Download, FileCheck, Loader2, Save, Send, Sparkles } from "lucide-react"
+import type { DocStatus } from "@/types"
 
 interface Props {
   hasResult: boolean
   hasUnresolvedErrors: boolean
   isGenerating: boolean
   isSaving: boolean
+  isIssuing: boolean
   canGenerate: boolean
+  status: DocStatus | null
   onGenerate: () => void
   onSave: () => void
+  onMarkReviewed: () => void
+  onIssue: () => void
   onDownloadPdf: () => void
   onDownloadDocx: () => void
 }
@@ -18,9 +23,13 @@ export function DocumentActions({
   hasUnresolvedErrors,
   isGenerating,
   isSaving,
+  isIssuing,
   canGenerate,
+  status,
   onGenerate,
   onSave,
+  onMarkReviewed,
+  onIssue,
   onDownloadPdf,
   onDownloadDocx,
 }: Props) {
@@ -52,6 +61,27 @@ export function DocumentActions({
               <Save className="mr-1 h-4 w-4" />
             )}
             초안 저장
+          </Button>
+
+          <Button
+            onClick={onMarkReviewed}
+            disabled={isSaving || isIssuing || hasUnresolvedErrors}
+            variant="outline"
+          >
+            <CheckCheck className="mr-1 h-4 w-4" />
+            {status === "reviewed" || status === "issued" ? "검토 완료" : "검토 완료 처리"}
+          </Button>
+
+          <Button
+            onClick={onIssue}
+            disabled={isSaving || isIssuing || hasUnresolvedErrors || status === "issued"}
+          >
+            {isIssuing ? (
+              <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="mr-1 h-4 w-4" />
+            )}
+            {status === "issued" ? "발급 완료" : "발급 처리"}
           </Button>
 
           <Button

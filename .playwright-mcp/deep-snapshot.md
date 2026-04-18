@@ -1,0 +1,82 @@
+- generic [ref=e5]:
+  - complementary [ref=e6]:
+    - img "aro" [ref=e8]
+    - navigation [ref=e9]:
+      - link "대시보드" [ref=e10] [cursor=pointer]:
+        - /url: /
+        - img [ref=e11]
+        - text: 대시보드
+      - link "SOAP 작성" [ref=e16] [cursor=pointer]:
+        - /url: /soap
+        - img [ref=e17]
+        - text: SOAP 작성
+      - link "약물 검토" [ref=e20] [cursor=pointer]:
+        - /url: /drugs
+        - img [ref=e21]
+        - text: 약물 검토
+      - link "검진 추적" [ref=e24] [cursor=pointer]:
+        - /url: /screening
+        - img [ref=e25]
+        - text: 검진 추적
+      - link "문서 발급" [ref=e27] [cursor=pointer]:
+        - /url: /documents
+        - img [ref=e28]
+        - text: 문서 발급
+      - link "환자 관리" [ref=e33] [cursor=pointer]:
+        - /url: /patients
+        - img [ref=e34]
+        - text: 환자 관리
+    - paragraph [ref=e40]: aro v0.1.0
+  - generic [ref=e41]:
+    - banner [ref=e42]:
+      - generic [ref=e43]:
+        - generic [ref=e44]: 김내과
+        - generic [ref=e45]: 의사
+        - button "로그아웃" [ref=e46]:
+          - img
+          - text: 로그아웃
+    - main [ref=e47]:
+      - generic [ref=e48]:
+        - generic [ref=e49]:
+          - heading "SOAP 작성" [level=1] [ref=e50]
+          - generic [ref=e51]:
+            - generic [ref=e52]: "방문 유형:"
+            - button "초진" [ref=e53]
+            - button "재진" [ref=e54]
+        - generic [ref=e56]:
+          - img [ref=e57]
+          - textbox "환자 검색 (차트번호 또는 이름)" [ref=e60]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - tablist [ref=e64]:
+              - tab "만성" [selected] [ref=e65]
+              - tab "급성" [ref=e66]
+            - tabpanel "만성" [ref=e67]:
+              - generic [ref=e68]:
+                - generic [ref=e70]: 질환 선택 (복수)
+                - generic [ref=e72]
+              - generic [ref=e82]:
+                - generic [ref=e84]: 활력 징후 / 체성분
+                - generic [ref=e86]
+              - generic [ref=e119]:
+                - generic [ref=e121]: 교육
+                - generic [ref=e122]
+          - generic [ref=e145]:
+            - generic [ref=e146]:
+              - generic [ref=e147]: SOAP 미리보기
+              - generic [ref=e148]:
+                - button "전체 복사" [disabled]
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]
+                - textbox [ref=e155]
+              - generic [ref=e156]:
+                - generic [ref=e157]
+                - textbox [ref=e161]
+              - generic [ref=e162]:
+                - generic [ref=e163]
+                - textbox [ref=e167]
+              - generic [ref=e168]:
+                - generic [ref=e169]
+                - textbox [ref=e173]
+          - button "진료 기록 저장" [disabled]

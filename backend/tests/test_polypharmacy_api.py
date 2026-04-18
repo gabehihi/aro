@@ -11,12 +11,12 @@ from modules.polypharmacy.ddi_checker import DDIFinding
 from modules.polypharmacy.service import PolypharmacyReport
 
 
-async def _make_token(db: AsyncSession) -> str:
+async def _make_token(db: AsyncSession, role: UserRole = UserRole.doctor) -> str:
     user = User(
-        username="poly_test_user",
+        username=f"poly_test_user_{role}",
         hashed_password=hash_password("testpass"),
         name="약물검토테스트의사",
-        role=UserRole.doctor,
+        role=role,
         is_active=True,
     )
     db.add(user)
@@ -126,3 +126,16 @@ async def test_review_empty_drug_list(client: AsyncClient, db_session: AsyncSess
     assert resp.status_code == 200
     data = resp.json()
     assert data["ddi_findings"] == []
+
+
+@pytest.mark.asyncio
+async def test_review_forbidden_for_nurse(client: AsyncClient, db_session: AsyncSession) -> None:
+    token = await _make_token(db_session, UserRole.nurse)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = await client.post(
+        "/api/v1/polypharmacy/review",
+        json={"drug_inns": ["metformin"], "egfr": 55.0},
+        headers=headers,
+    )
+    assert resp.status_code == 403

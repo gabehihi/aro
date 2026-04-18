@@ -7,7 +7,18 @@ import type {
   MedicalDocument,
   DocumentListResponse,
   DocType,
+  DocStatus,
 } from "@/types"
+
+interface GetDocumentsParams {
+  patientId?: string
+  page?: number
+  size?: number
+  status?: DocStatus
+  docType?: DocType
+  dateFrom?: string
+  dateTo?: string
+}
 
 export async function generateDocument(
   body: DocumentGenerateRequest,
@@ -39,12 +50,27 @@ export async function saveDocument(
 }
 
 export async function getDocuments(
-  patientId?: string,
-  page = 1,
-  size = 20,
+  params: GetDocumentsParams = {},
 ): Promise<DocumentListResponse> {
+  const {
+    patientId,
+    page = 1,
+    size = 20,
+    status,
+    docType,
+    dateFrom,
+    dateTo,
+  } = params
   const { data } = await api.get<DocumentListResponse>("/documents", {
-    params: { patient_id: patientId, page, size },
+    params: {
+      patient_id: patientId,
+      page,
+      size,
+      status,
+      doc_type: docType,
+      date_from: dateFrom,
+      date_to: dateTo,
+    },
   })
   return data
 }

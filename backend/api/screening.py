@@ -8,12 +8,14 @@ from datetime import date
 from io import BytesIO, StringIO
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, HTTPException, Request, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.audit import log_action
 from core.database import get_db
 from core.models.patient import Patient
+from core.models.user import User
 from core.schemas.screening import (
     AbnormalFinding,
     BulkUploadResponse,
@@ -24,6 +26,7 @@ from core.schemas.screening import (
     ScreeningResultCreate,
     ScreeningResultResponse,
 )
+from core.security import get_current_user
 from modules.screening.service import ScreeningService
 
 router = APIRouter(prefix="/screening", tags=["screening"])
@@ -35,7 +38,10 @@ _svc = ScreeningService()
     response_model=ClassifyPreviewResponse,
     summary="검진 결과 이상소견 미리보기 (저장 없음)",
 )
-async def classify_preview(body: ClassifyPreviewRequest) -> ClassifyPreviewResponse:
+async def classify_preview(
+    body: ClassifyPreviewRequest,
+    current_user: User = Depends(get_current_user),
+) -> ClassifyPreviewResponse:
     result = _svc.classify_preview(body.results, body.patient_sex)
     # service returns ClassifyPreviewResponse directly; rebuild to ensure AbnormalFinding types
     findings = [AbnormalFinding(**f) if isinstance(f, dict) else f for f in result.findings]
@@ -55,12 +61,27 @@ async def classify_preview(body: ClassifyPreviewRequest) -> ClassifyPreviewRespo
 )
 async def save_screening_result(
     body: ScreeningResultCreate,
+    request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> ScreeningResultResponse:
     try:
         result = await _svc.save_and_classify(db, body)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    await log_action(
+        db,
+        current_user,
+        "create",
+        "screening",
+        str(result.id),
+        details={
+            "patient_id": str(result.patient_id),
+            "screening_type": result.screening_type,
+            "follow_up_required": result.follow_up_required,
+        },
+        request=request,
+    )
     return result
 
 
@@ -71,6 +92,7 @@ async def save_screening_result(
 )
 async def get_dashboard(
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> FollowUpDashboardResponse:
     return await _svc.get_dashboard(db)
 
@@ -82,12 +104,23 @@ async def get_dashboard(
 )
 async def resolve_alert(
     alert_id: UUID,
+    request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> None:
     try:
-        await _svc.resolve_alert(db, alert_id)
+        alert = await _svc.resolve_alert(db, alert_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e)) from e
+    await log_action(
+        db,
+        current_user,
+        "update",
+        "follow_up_alert",
+        str(alert_id),
+        details={"patient_id": str(alert.patient_id), "resolved": True},
+        request=request,
+    )
 
 
 # ── 일괄 업로드 헬퍼 ──────────────────────────────────────────────────────────
@@ -135,7 +168,9 @@ def _parse_excel_content(content: bytes) -> list[dict]:
 )
 async def upload_bulk_screening(
     file: UploadFile,
+    request: Request,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ) -> BulkUploadResponse:
     """엑셀(.xlsx) 또는 CSV 파일로 검진 결과를 일괄 저장한다.
 
@@ -243,9 +278,23 @@ async def upload_bulk_screening(
     success = [r for r in results if r.error is None]
     errors = [r for r in results if r.error is not None]
 
-    return BulkUploadResponse(
+    response = BulkUploadResponse(
         total_rows=len(results),
         success_count=len(success),
         error_count=len(errors),
         rows=results,
     )
+    await log_action(
+        db,
+        current_user,
+        "create",
+        "screening_bulk",
+        filename or "bulk_upload",
+        details={
+            "total_rows": response.total_rows,
+            "success_count": response.success_count,
+            "error_count": response.error_count,
+        },
+        request=request,
+    )
+    return response

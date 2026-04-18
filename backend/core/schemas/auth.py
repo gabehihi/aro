@@ -21,5 +21,15 @@ class UserResponse(BaseModel):
     name: str
     role: UserRole
     is_active: bool
+    clinic_name: str | None = None
+    clinic_address: str | None = None
+    clinic_phone: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class UserUpdateRequest(BaseModel):
+    name: str | None = None
+    clinic_name: str | None = None
+    clinic_address: str | None = None
+    clinic_phone: str | None = None

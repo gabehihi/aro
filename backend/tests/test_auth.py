@@ -67,3 +67,31 @@ async def test_get_me(client: AsyncClient, db_session: AsyncSession) -> None:
 async def test_get_me_unauthorized(client: AsyncClient) -> None:
     response = await client.get("/api/v1/auth/me")
     assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_update_me_profile(client: AsyncClient, db_session: AsyncSession) -> None:
+    await _create_test_user(db_session)
+    login_resp = await client.post(
+        "/api/v1/auth/login",
+        data={"username": "testdoc", "password": "testpass123"},
+    )
+    token = login_resp.json()["access_token"]
+
+    update_resp = await client.patch(
+        "/api/v1/auth/me",
+        headers={"Authorization": f"Bearer {token}"},
+        json={
+            "name": "수정의사",
+            "clinic_name": "테스트보건지소",
+            "clinic_address": "충북 테스트시 1",
+            "clinic_phone": "043-000-0000",
+        },
+    )
+
+    assert update_resp.status_code == 200
+    data = update_resp.json()
+    assert data["name"] == "수정의사"
+    assert data["clinic_name"] == "테스트보건지소"
+    assert data["clinic_address"] == "충북 테스트시 1"
+    assert data["clinic_phone"] == "043-000-0000"

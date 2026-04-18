@@ -5,52 +5,12 @@ from pydantic import BaseModel, Field
 
 from core.models.enums import VisitType
 
-# --- SOAP convert (preview, no save) ---
-
-
-class SOAPRequest(BaseModel):
-    patient_id: uuid.UUID
-    raw_input: str = Field(min_length=1)
-    visit_type: VisitType
-
-
-class VitalsSchema(BaseModel):
-    sbp: float | None = None
-    dbp: float | None = None
-    hr: float | None = None
-    bt: float | None = None
-    rr: float | None = None
-    spo2: float | None = None
-    bw: float | None = None
-    bh: float | None = None
-    bmi: float | None = None
-
-
-class KCDCodeSchema(BaseModel):
-    code: str
-    description: str
-
-
-class LabSchema(BaseModel):
-    name: str
-    value: float | None = None
-    unit: str = ""
-    flag: str | None = None
-
 
 class HealthPromotionSchema(BaseModel):
     smoking_cessation: bool = False
     alcohol_reduction: bool = False
     exercise: bool = False
     diet: bool = False
-
-
-class SickDayAlertSchema(BaseModel):
-    drug_name: str
-    ingredient: str
-    action: str  # HOLD, REDUCE, MONITOR
-    reason: str
-    triggering_keyword: str
 
 
 class WarningSchema(BaseModel):
@@ -67,21 +27,6 @@ class LLMMetaSchema(BaseModel):
     input_tokens: int = 0
     output_tokens: int = 0
     cache_read_tokens: int = 0
-
-
-class SOAPResponse(BaseModel):
-    subjective: str
-    objective: str
-    assessment: str
-    plan: str
-    vitals: VitalsSchema
-    kcd_codes: list[KCDCodeSchema]
-    labs: list[LabSchema]
-    health_promotion: HealthPromotionSchema
-    unresolved_abbreviations: list[str]
-    warnings: list[WarningSchema]
-    sick_day_alerts: list[SickDayAlertSchema]
-    llm_meta: LLMMetaSchema
 
 
 # --- Encounter CRUD ---
@@ -164,4 +109,39 @@ class ClinicalSummaryResponse(BaseModel):
     recent_vitals: list[dict]
     recent_labs: list[dict]
     recent_encounters: list[dict]
-    follow_up_alerts: list[dict]
+    follow_up_alerts: list["ClinicalFollowUpAlertSchema"]
+
+
+class ClinicalFollowUpAlertSchema(BaseModel):
+    id: uuid.UUID
+    alert_type: str
+    item: str
+    last_value: str | None
+    last_date: date | None
+    due_date: date
+    days_overdue: int
+    priority: str
+    resolved: bool
+
+
+# --- SOAP prefill (template-based SOAP writer) ---
+
+
+class PrefillLabSchema(BaseModel):
+    name: str
+    value: float | None = None
+    unit: str = ""
+    flag: str | None = None
+    measured_at: datetime
+
+
+class SOAPPrefillResponse(BaseModel):
+    """직전 encounter 기반 템플릿 SOAP Writer 프리필."""
+
+    # DiseaseId[] — HTN/DM/DL/OB/MASLD/OP/CKD/HypoT/HyperT
+    selected_diseases: list[str]
+    chronic_vs: dict  # {sbp, dbp, hr, bt, rr, spo2, bw, bh, waist, bmi}
+    labs_by_name: dict[str, PrefillLabSchema]  # 최근값 (180일 이내)
+    other_labs: list[PrefillLabSchema] = Field(default_factory=list)
+    education_flags: HealthPromotionSchema
+    last_encounter_date: datetime | None

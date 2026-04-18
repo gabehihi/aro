@@ -1,0 +1,13 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - img "aro" [ref=e6]
+    - paragraph [ref=e7]: 보건소 AI 어시스턴트
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]: 아이디
+      - textbox "아이디" [active] [ref=e12]:
+        - /placeholder: 사용자 아이디
+    - generic [ref=e13]:
+      - generic [ref=e14]: 비밀번호
+      - textbox "비밀번호" [ref=e15]
+    - button "로그인" [ref=e16]

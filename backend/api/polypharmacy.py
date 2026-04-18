@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
 from core.llm.service import LLMService
+from core.models.enums import UserRole
 from core.models.prescription import Prescription
 from core.models.user import User
 from core.schemas.polypharmacy import (
@@ -18,7 +19,7 @@ from core.schemas.polypharmacy import (
     SickDayAlertSchema,
     WarningSchema,
 )
-from core.security import get_current_user
+from core.security import require_role
 from modules.polypharmacy.service import PolypharmacyService
 
 router = APIRouter(prefix="/polypharmacy", tags=["polypharmacy"])
@@ -37,7 +38,7 @@ def _get_service() -> PolypharmacyService:
 async def review_polypharmacy(
     body: PolypharmacyReviewRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor)),
 ) -> PolypharmacyReviewResponse:
     """DDI + 신기능 용량 조절 + Sick Day 통합 약물검토 리포트를 생성한다."""
     drug_inns: list[str] = []

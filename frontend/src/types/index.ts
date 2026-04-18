@@ -6,6 +6,9 @@ export interface User {
   name: string
   role: UserRole
   is_active: boolean
+  clinic_name?: string | null
+  clinic_address?: string | null
+  clinic_phone?: string | null
 }
 
 export interface TokenResponse {
@@ -14,8 +17,15 @@ export interface TokenResponse {
 }
 
 export type Sex = "M" | "F"
-export type InsuranceType = "건강보험" | "의료급여" | "산재" | "자동차보험" | "비급여"
-export type MessagingMethod = "kakao" | "sms"
+export type InsuranceType = "건강보험" | "의료급여1종" | "의료급여2종"
+export type MessagingMethod = "kakao" | "sms" | "both"
+
+export interface UserUpdatePayload {
+  name?: string
+  clinic_name?: string
+  clinic_address?: string
+  clinic_phone?: string
+}
 
 export interface Patient {
   id: string
@@ -70,6 +80,8 @@ export interface PatientListResponse {
 }
 
 export type VisitType = "초진" | "재진" | "건강상담"
+export type DrugRoute = "경구" | "주사" | "외용" | "흡입"
+export type PrescribedBy = "보건소" | "타원"
 
 export interface Vitals {
   sbp: number | null
@@ -80,6 +92,7 @@ export interface Vitals {
   spo2: number | null
   bw: number | null
   bh: number | null
+  waist: number | null
   bmi: number | null
 }
 
@@ -202,12 +215,88 @@ export interface ClinicalSummary {
   recent_vitals: Record<string, unknown>[]
   recent_labs: Record<string, unknown>[]
   recent_encounters: Record<string, unknown>[]
-  follow_up_alerts: Record<string, unknown>[]
+  follow_up_alerts: ClinicalFollowUpAlert[]
+}
+
+export interface ClinicalFollowUpAlert {
+  id: string
+  alert_type: string
+  item: string
+  last_value: string | null
+  last_date: string | null
+  due_date: string
+  days_overdue: number
+  priority: "urgent" | "due" | "upcoming"
+  resolved: boolean
+}
+
+export interface Prescription {
+  id: string
+  patient_id: string
+  encounter_id: string | null
+  drug_name: string | null
+  drug_code: string | null
+  ingredient_inn: string | null
+  atc_code: string | null
+  drugbank_id: string | null
+  dose: string | null
+  frequency: string | null
+  duration_days: number | null
+  route: DrugRoute | null
+  is_active: boolean
+  prescribed_by: PrescribedBy
+  source_hospital: string | null
+  start_date: string | null
+  end_date: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface PrescriptionCreate {
+  encounter_id?: string | null
+  drug_name?: string
+  drug_code?: string
+  ingredient_inn?: string
+  atc_code?: string
+  drugbank_id?: string
+  dose?: string
+  frequency?: string
+  duration_days?: number
+  route?: DrugRoute
+  prescribed_by?: PrescribedBy
+  source_hospital?: string
+  start_date?: string
+  end_date?: string
+  is_active?: boolean
+}
+
+export interface PrescriptionUpdate {
+  drug_name?: string
+  drug_code?: string
+  ingredient_inn?: string
+  atc_code?: string
+  drugbank_id?: string
+  dose?: string
+  frequency?: string
+  duration_days?: number
+  route?: DrugRoute
+  prescribed_by?: PrescribedBy
+  source_hospital?: string
+  start_date?: string
+  end_date?: string
+  is_active?: boolean
 }
 
 // --- Document Automation (Phase 2) ---
 
-export type DocType = "진단서" | "소견서" | "의뢰서" | "확인서" | "건강진단서"
+export type DocType =
+  | "진단서"
+  | "소견서"
+  | "의뢰서"
+  | "확인서"
+  | "건강진단서"
+  | "검사결과안내서"
+  | "교육문서"
 export type DocStatus = "draft" | "reviewed" | "issued"
 
 export interface DocumentGenerateRequest {
@@ -261,6 +350,56 @@ export interface DocumentListResponse {
   total: number
   page: number
   size: number
+}
+
+export interface RecentDocumentSummary {
+  id: string
+  patient_id: string
+  patient_name: string
+  chart_no: string
+  doc_type: DocType
+  title: string
+  status: DocStatus
+  created_at: string
+  issued_at: string | null
+}
+
+export interface MonthlyReportStats {
+  year: number
+  month: number
+  total_patients: number
+  new_patients_this_month: number
+  active_patients_this_month: number
+  total_encounters: number
+  encounters_this_month: number
+  documents_issued_this_month: number
+  followup_alerts_this_month: number
+  followup_resolved_this_month: number
+  followup_resolution_rate: number
+  screenings_this_month: number
+  abnormal_screenings: number
+  abnormal_rate: number
+}
+
+export interface MonthlyReportArchiveItem {
+  year: number
+  month: number
+  filename: string
+  size_bytes: number
+  generated_at: string
+}
+
+export interface MonthlyReportArchiveResponse {
+  items: MonthlyReportArchiveItem[]
+}
+
+export interface DashboardOverviewResponse {
+  summary: DashboardSummary
+  month_stats: MonthlyReportStats
+  upcoming_visits: VisitScheduleItem[]
+  priority_followup_alerts: FollowUpAlertItem[]
+  recent_documents: RecentDocumentSummary[]
+  report_archive: MonthlyReportArchiveItem[]
 }
 
 // ============================================================
@@ -398,8 +537,8 @@ export interface DashboardResponse {
     patient_id: string
     patient_name: string
     chart_no: string
-    last_visit: string | null
-    days_since_last_visit: number | null
+    scheduled_date: string
+    planned_tests: string[]
   }>
 }
 

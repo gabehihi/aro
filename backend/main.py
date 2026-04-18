@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select
+from sqlalchemy import inspect, select, text
 
 from api.v1 import router as v1_router
 from config import get_settings
@@ -43,6 +43,29 @@ async def _seed_admin() -> None:
         logger.info("기본 admin 계정 생성 완료 (username: admin)")
 
 
+async def _ensure_compatible_schema() -> None:
+    """기존 dev DB에 누락된 users 컬럼을 보강한다."""
+
+    def get_missing_user_columns(sync_conn) -> list[tuple[str, str]]:
+        inspector = inspect(sync_conn)
+        if "users" not in inspector.get_table_names():
+            return []
+
+        existing = {column["name"] for column in inspector.get_columns("users")}
+        required = {
+            "clinic_name": "ALTER TABLE users ADD COLUMN clinic_name VARCHAR(200)",
+            "clinic_address": "ALTER TABLE users ADD COLUMN clinic_address VARCHAR(200)",
+            "clinic_phone": "ALTER TABLE users ADD COLUMN clinic_phone VARCHAR(50)",
+        }
+        return [(name, ddl) for name, ddl in required.items() if name not in existing]
+
+    async with db_module.engine.begin() as conn:
+        missing_columns = await conn.run_sync(get_missing_user_columns)
+        for column_name, ddl in missing_columns:
+            await conn.execute(text(ddl))
+            logger.info("users.%s 컬럼 추가 완료", column_name)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     # Startup
@@ -50,6 +73,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     async with db_module.engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("DB 테이블 생성 완료")
+    await _ensure_compatible_schema()
 
     await _seed_admin()
 

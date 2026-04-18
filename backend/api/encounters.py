@@ -1,85 +1,132 @@
 import uuid
+import re
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.database import get_db
-from core.llm.service import LLMService
 from core.models.encounter import Encounter
+from core.models.enums import UserRole
+from core.models.follow_up_alert import FollowUpAlert
 from core.models.patient import Patient
 from core.models.user import User
 from core.schemas.encounter import (
+    ClinicalFollowUpAlertSchema,
     ClinicalSummaryResponse,
     EncounterCreate,
     EncounterListResponse,
     EncounterResponse,
     EncounterUpdate,
     HealthPromotionSchema,
-    KCDCodeSchema,
-    LabSchema,
-    LLMMetaSchema,
-    SickDayAlertSchema,
-    SOAPRequest,
-    SOAPResponse,
-    VitalsSchema,
-    WarningSchema,
+    PrefillLabSchema,
+    SOAPPrefillResponse,
 )
-from core.security import get_current_user
-from modules.soap.service import SOAPService
+from core.security import require_role
+
+# KCD 코드 → 템플릿 SOAP Writer의 DiseaseId 매핑.
+# 레지스트리의 canonical 코드를 우선 매칭하고, 미스매치된 코드에 대해서는 prefix 규칙을 적용한다.
+_KCD_PREFIX_TO_DISEASE: list[tuple[str, str]] = [
+    ("I10", "HTN"),
+    ("I11", "HTN"),
+    ("I12", "HTN"),
+    ("I13", "HTN"),
+    ("I15", "HTN"),
+    ("E10", "DM"),
+    ("E11", "DM"),
+    ("E13", "DM"),
+    ("E14", "DM"),
+    ("E78", "DL"),
+    ("E66", "OB"),
+    ("K76.0", "MASLD"),
+    ("K75.8", "MASLD"),
+    ("M81", "OP"),
+    ("M80", "OP"),
+    ("N18", "CKD"),
+    ("E03", "HypoT"),
+    ("E02", "HypoT"),
+    ("E05", "HyperT"),
+    ("E06", "HyperT"),
+]
+
+_LAB_NAME_ALIASES: dict[str, str] = {
+    "hba1c": "hba1c",
+    "a1c": "hba1c",
+    "glucose": "fbs",
+    "fbs": "fbs",
+    "fbg": "fbs",
+    "fpg": "fbs",
+    "fastingbloodsugar": "fbs",
+    "ldl": "ldl",
+    "ldlc": "ldl",
+    "ldlcholesterol": "ldl",
+    "hdl": "hdl",
+    "hdlc": "hdl",
+    "hdlcholesterol": "hdl",
+    "tg": "tg",
+    "triglyceride": "tg",
+    "triglycerides": "tg",
+    "cholesterol": "tc",
+    "totalcholesterol": "tc",
+    "tc": "tc",
+    "tchol": "tc",
+    "cr": "cr",
+    "creatinine": "cr",
+    "bun": "bun",
+    "bloodureanitrogen": "bun",
+    "egfr": "egfr",
+    "tsh": "tsh",
+    "ft4": "ft4",
+    "freet4": "ft4",
+    "t4": "ft4",
+    "ast": "ast",
+    "alt": "alt",
+    "ggt": "ggt",
+    "ggtp": "ggt",
+    "acr": "acr",
+    "uacr": "acr",
+    "albumincreatinineratio": "acr",
+    "albumincrratio": "acr",
+    "albumincr": "acr",
+    "vitd": "vitd",
+    "vitamind": "vitd",
+    "25ohvitd": "vitd",
+    "25ohvitamind": "vitd",
+    "hb": "hb",
+    "hgb": "hb",
+    "hemoglobin": "hb",
+    "ppg": "ppg",
+    "postprandialglucose": "ppg",
+    "tscorespine": "tscore_spine",
+    "spinetscore": "tscore_spine",
+    "tscorehip": "tscore_hip",
+    "hiptscore": "tscore_hip",
+}
+
+
+def _compact_lab_name(name: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", name.strip().lower())
+
+
+def _kcd_to_disease_id(code: str) -> str | None:
+    if not code:
+        return None
+    normalized = code.strip().upper().replace(" ", "")
+    for prefix, disease_id in _KCD_PREFIX_TO_DISEASE:
+        if normalized.startswith(prefix):
+            return disease_id
+    return None
+
+
+def _normalize_lab_name(name: str) -> str | None:
+    if not name:
+        return None
+    key = _compact_lab_name(name)
+    return _LAB_NAME_ALIASES.get(key)
+
 
 router = APIRouter(tags=["encounters"])
-
-_soap_service: SOAPService | None = None
-
-
-def _get_soap_service() -> SOAPService:
-    global _soap_service
-    if _soap_service is None:
-        _soap_service = SOAPService(LLMService())
-    return _soap_service
-
-
-@router.post("/soap/convert", response_model=SOAPResponse)
-async def convert_soap(
-    body: SOAPRequest,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-) -> SOAPResponse:
-    """AI SOAP 변환 (미리보기, 저장하지 않음)."""
-    service = _get_soap_service()
-    try:
-        result = await service.convert(
-            raw_input=body.raw_input,
-            patient_id=body.patient_id,
-            visit_type=body.visit_type,
-            user_personal_codebook=current_user.personal_codebook,
-            db=db,
-        )
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=str(e),
-        ) from e
-
-    return SOAPResponse(
-        subjective=result.subjective,
-        objective=result.objective,
-        assessment=result.assessment,
-        plan=result.plan,
-        vitals=VitalsSchema(**result.vitals) if result.vitals else VitalsSchema(),
-        kcd_codes=[KCDCodeSchema(**c) for c in result.kcd_codes],
-        labs=[LabSchema(**la) for la in result.labs],
-        health_promotion=(
-            HealthPromotionSchema(**result.health_promotion)
-            if result.health_promotion
-            else HealthPromotionSchema()
-        ),
-        unresolved_abbreviations=result.unresolved_abbreviations,
-        warnings=[WarningSchema(**w) for w in result.warnings],
-        sick_day_alerts=[SickDayAlertSchema(**a) for a in result.sick_day_alerts],
-        llm_meta=LLMMetaSchema(**result.llm_meta) if result.llm_meta else LLMMetaSchema(),
-    )
 
 
 @router.post(
@@ -90,7 +137,7 @@ async def convert_soap(
 async def create_encounter(
     body: EncounterCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor)),
 ) -> EncounterResponse:
     """의사 확인 후 진료 기록 저장."""
     # Verify patient exists
@@ -133,7 +180,7 @@ async def list_encounters(
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor)),
 ) -> EncounterListResponse:
     total_result = await db.execute(
         select(func.count(Encounter.id)).where(Encounter.patient_id == patient_id)
@@ -161,7 +208,7 @@ async def list_encounters(
 async def get_encounter(
     encounter_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor)),
 ) -> EncounterResponse:
     result = await db.execute(select(Encounter).where(Encounter.id == encounter_id))
     encounter = result.scalar_one_or_none()
@@ -178,7 +225,7 @@ async def update_encounter(
     encounter_id: uuid.UUID,
     body: EncounterUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor)),
 ) -> EncounterResponse:
     result = await db.execute(select(Encounter).where(Encounter.id == encounter_id))
     encounter = result.scalar_one_or_none()
@@ -198,13 +245,154 @@ async def update_encounter(
 
 
 @router.get(
+    "/patients/{patient_id}/soap-prefill",
+    response_model=SOAPPrefillResponse,
+)
+async def get_soap_prefill(
+    patient_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.doctor)),
+) -> SOAPPrefillResponse:
+    """직전 encounter 3건 기반 템플릿 SOAP Writer 프리필.
+
+    - selected_diseases: kcd_codes → DiseaseId 매핑 (중복 제거)
+    - chronic_vs: 가장 최근 encounter의 vitals
+    - labs_by_name: 분석물별 최신값, 180일 이내
+    - education_flags: 가장 최근 encounter의 health_promotion
+    - last_encounter_date: 가장 최근 encounter 날짜
+    """
+    patient_result = await db.execute(select(Patient).where(Patient.id == patient_id))
+    if not patient_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="환자를 찾을 수 없습니다",
+        )
+
+    enc_result = await db.execute(
+        select(Encounter)
+        .where(Encounter.patient_id == patient_id)
+        .order_by(Encounter.encounter_date.desc())
+        .limit(3)
+    )
+    encounters = list(enc_result.scalars().all())
+
+    if not encounters:
+        return SOAPPrefillResponse(
+            selected_diseases=[],
+            chronic_vs={},
+            labs_by_name={},
+            other_labs=[],
+            education_flags=HealthPromotionSchema(),
+            last_encounter_date=None,
+        )
+
+    # KCD → DiseaseId (DISEASE_ORDER 유지하면서 중복 제거)
+    disease_order = ["HTN", "DM", "DL", "OB", "MASLD", "OP", "CKD", "HypoT", "HyperT"]
+    found: set[str] = set()
+    for enc in encounters:
+        for kcd in enc.kcd_codes or []:
+            code = kcd.get("code") if isinstance(kcd, dict) else None
+            disease_id = _kcd_to_disease_id(code or "")
+            if disease_id:
+                found.add(disease_id)
+    # Hypo/Hyper 배타 — 최근 encounter 기준 우선
+    if "HypoT" in found and "HyperT" in found:
+        latest_thyroid: str | None = None
+        for enc in encounters:
+            for kcd in enc.kcd_codes or []:
+                code = kcd.get("code") if isinstance(kcd, dict) else None
+                did = _kcd_to_disease_id(code or "")
+                if did in ("HypoT", "HyperT"):
+                    latest_thyroid = did
+                    break
+            if latest_thyroid:
+                break
+        if latest_thyroid == "HypoT":
+            found.discard("HyperT")
+        else:
+            found.discard("HypoT")
+    selected_diseases = [d for d in disease_order if d in found]
+
+    latest = encounters[0]
+
+    # 180일 이내 labs dedupe (분석물별 최신 1건)
+    cutoff = datetime.now(UTC) - timedelta(days=180)
+    labs_by_name: dict[str, PrefillLabSchema] = {}
+    other_labs: list[PrefillLabSchema] = []
+    seen_other_labs: set[str] = set()
+    for enc in encounters:
+        enc_dt = enc.encounter_date
+        enc_dt_aware = enc_dt.replace(tzinfo=UTC) if enc_dt.tzinfo is None else enc_dt
+        if enc_dt_aware < cutoff:
+            continue
+        for lab in enc.labs or []:
+            if not isinstance(lab, dict):
+                continue
+            raw_name = str(lab.get("name") or "").strip()
+            canonical = _normalize_lab_name(lab.get("name") or "")
+            measured_at = enc.encounter_date
+            if canonical:
+                if canonical in labs_by_name:
+                    # encounters 는 최신순으로 조회되므로 먼저 들어간 값이 최신
+                    continue
+                labs_by_name[canonical] = PrefillLabSchema(
+                    name=canonical,
+                    value=lab.get("value"),
+                    unit=lab.get("unit") or "",
+                    flag=lab.get("flag"),
+                    measured_at=measured_at,
+                )
+                continue
+            other_key = _compact_lab_name(raw_name)
+            if not raw_name or not other_key or other_key in seen_other_labs:
+                continue
+            seen_other_labs.add(other_key)
+            other_labs.append(
+                PrefillLabSchema(
+                    name=raw_name,
+                    value=lab.get("value"),
+                    unit=lab.get("unit") or "",
+                    flag=lab.get("flag"),
+                    measured_at=measured_at,
+                )
+            )
+
+    vitals = latest.vitals or {}
+    chronic_vs = {
+        "sbp": vitals.get("sbp"),
+        "dbp": vitals.get("dbp"),
+        "hr": vitals.get("hr"),
+        "bt": vitals.get("bt"),
+        "rr": vitals.get("rr"),
+        "spo2": vitals.get("spo2"),
+        "bw": vitals.get("bw"),
+        "bh": vitals.get("bh"),
+        "waist": vitals.get("waist"),
+        "bmi": vitals.get("bmi"),
+    }
+
+    education_flags = HealthPromotionSchema(
+        **(latest.health_promotion or {}),
+    )
+
+    return SOAPPrefillResponse(
+        selected_diseases=selected_diseases,
+        chronic_vs=chronic_vs,
+        labs_by_name=labs_by_name,
+        other_labs=other_labs,
+        education_flags=education_flags,
+        last_encounter_date=latest.encounter_date,
+    )
+
+
+@router.get(
     "/patients/{patient_id}/clinical-summary",
     response_model=ClinicalSummaryResponse,
 )
 async def get_clinical_summary(
     patient_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor)),
 ) -> ClinicalSummaryResponse:
     """임상 대시보드 집계 데이터."""
     # Verify patient exists
@@ -223,6 +411,17 @@ async def get_clinical_summary(
         .limit(10)
     )
     encounters = list(enc_result.scalars().all())
+
+    alert_result = await db.execute(
+        select(FollowUpAlert)
+        .where(
+            FollowUpAlert.patient_id == patient_id,
+            FollowUpAlert.resolved.is_(False),
+        )
+        .order_by(FollowUpAlert.due_date.asc())
+        .limit(5)
+    )
+    follow_up_alerts = list(alert_result.scalars().all())
 
     recent_vitals = []
     recent_labs = []
@@ -244,10 +443,36 @@ async def get_clinical_summary(
             }
         )
 
+    priority_order = {
+        "urgent": 0,
+        "due": 1,
+        "upcoming": 2,
+    }
+    serialized_alerts = [
+        ClinicalFollowUpAlertSchema(
+            id=alert.id,
+            alert_type=str(alert.alert_type),
+            item=alert.item,
+            last_value=alert.last_value,
+            last_date=alert.last_date,
+            due_date=alert.due_date,
+            days_overdue=alert.days_overdue,
+            priority=str(alert.priority),
+            resolved=alert.resolved,
+        )
+        for alert in sorted(
+            follow_up_alerts,
+            key=lambda alert: (
+                priority_order.get(str(alert.priority), 99),
+                alert.due_date,
+            ),
+        )
+    ]
+
     return ClinicalSummaryResponse(
         patient_id=patient_id,
         recent_vitals=recent_vitals,
         recent_labs=recent_labs,
         recent_encounters=recent_enc_summaries,
-        follow_up_alerts=[],  # TODO: implement F/U rules in Step 8
+        follow_up_alerts=serialized_alerts,
     )

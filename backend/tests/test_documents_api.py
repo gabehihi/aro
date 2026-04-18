@@ -1,6 +1,6 @@
 """Document Automation API integration tests."""
 
-from datetime import date
+from datetime import date, datetime
 from unittest.mock import patch
 
 import pytest
@@ -14,16 +14,26 @@ from core.models.user import User
 from core.security import create_access_token, hash_password
 
 
-async def _setup(db: AsyncSession) -> tuple[Patient, User, str]:
+async def _create_user(db: AsyncSession, username: str, role: UserRole) -> tuple[User, str]:
     user = User(
-        username="doc_api_test",
+        username=username,
         hashed_password=hash_password("testpass"),
-        name="API테스트의사",
-        role=UserRole.doctor,
+        name="API테스트사용자",
+        role=role,
         is_active=True,
     )
     db.add(user)
-    await db.flush()
+    await db.commit()
+    await db.refresh(user)
+    return user, create_access_token(data={"sub": str(user.id)})
+
+
+async def _setup(
+    db: AsyncSession,
+    username: str = "doc_api_test",
+    role: UserRole = UserRole.doctor,
+) -> tuple[Patient, User, str]:
+    user, token = await _create_user(db, username, role)
 
     patient = Patient(
         chart_no="D-0001",
@@ -36,10 +46,8 @@ async def _setup(db: AsyncSession) -> tuple[Patient, User, str]:
     )
     db.add(patient)
     await db.commit()
-    await db.refresh(user)
     await db.refresh(patient)
 
-    token = create_access_token(data={"sub": str(user.id)})
     return patient, user, token
 
 
@@ -48,18 +56,24 @@ async def _make_doc(
     patient: Patient,
     user: User,
     status: DocStatus = DocStatus.draft,
+    doc_type: DocType = DocType.진단서,
+    created_at: datetime | None = None,
 ) -> MedicalDocument:
     doc = MedicalDocument(
         patient_id=patient.id,
-        doc_type=DocType.진단서,
-        title="테스트 진단서",
-        content={"title": "진단서", "diagnosis": "본태성 고혈압(I10)"},
-        generated_text="본태성 고혈압(I10) 진단서",
+        doc_type=doc_type,
+        title=f"테스트 {doc_type}",
+        content={"title": doc_type.value, "diagnosis": "본태성 고혈압(I10)"},
+        generated_text=f"본태성 고혈압(I10) {doc_type}",
         status=status,
         created_by=user.id,
     )
     db.add(doc)
     await db.commit()
+    if created_at is not None:
+        doc.created_at = created_at
+        doc.updated_at = created_at
+        await db.commit()
     await db.refresh(doc)
     return doc
 
@@ -161,6 +175,87 @@ async def test_list_documents_filter_by_patient(
     data = resp.json()
     assert data["total"] == 1
     assert data["items"][0]["patient_id"] == str(patient.id)
+
+
+@pytest.mark.asyncio
+async def test_list_documents_filter_by_status_and_doc_type(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    patient, user, token = await _setup(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    await _make_doc(
+        db_session,
+        patient,
+        user,
+        status=DocStatus.reviewed,
+        doc_type=DocType.교육문서,
+    )
+    await _make_doc(
+        db_session,
+        patient,
+        user,
+        status=DocStatus.issued,
+        doc_type=DocType.진단서,
+    )
+
+    resp = await client.get(
+        "/api/v1/documents",
+        params={"status": "reviewed", "doc_type": "교육문서"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 1
+    assert data["items"][0]["status"] == "reviewed"
+    assert data["items"][0]["doc_type"] == "교육문서"
+
+
+@pytest.mark.asyncio
+async def test_list_documents_filter_by_date_range(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    patient, user, token = await _setup(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    await _make_doc(
+        db_session,
+        patient,
+        user,
+        created_at=datetime(2026, 4, 10, 9, 0, 0),
+    )
+    await _make_doc(
+        db_session,
+        patient,
+        user,
+        doc_type=DocType.검사결과안내서,
+        created_at=datetime(2026, 4, 20, 15, 30, 0),
+    )
+
+    resp = await client.get(
+        "/api/v1/documents",
+        params={"date_from": "2026-04-20", "date_to": "2026-04-20"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["total"] == 1
+    assert data["items"][0]["doc_type"] == "검사결과안내서"
+
+
+@pytest.mark.asyncio
+async def test_list_documents_invalid_date_range(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    _, _, token = await _setup(db_session)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = await client.get(
+        "/api/v1/documents",
+        params={"date_from": "2026-04-21", "date_to": "2026-04-20"},
+        headers=headers,
+    )
+    assert resp.status_code == 400
 
 
 # --- Get single ---
@@ -303,3 +398,40 @@ async def test_unauthenticated_rejected(client: AsyncClient) -> None:
     """토큰 없는 요청은 401을 반환한다."""
     resp = await client.get("/api/v1/documents")
     assert resp.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_nurse_can_access_documents(client: AsyncClient, db_session: AsyncSession) -> None:
+    patient, _, token = await _setup(db_session, "doc_nurse", UserRole.nurse)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = await client.post(
+        "/api/v1/documents/source-data",
+        json={"patient_id": str(patient.id), "doc_type": "진단서"},
+        headers=headers,
+    )
+    assert resp.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_admin_forbidden_from_documents(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    patient, _, token = await _setup(db_session, "doc_admin", UserRole.admin)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    resp = await client.get("/api/v1/documents", headers=headers)
+    assert resp.status_code == 403
+
+    save_resp = await client.post(
+        "/api/v1/documents",
+        json={
+            "patient_id": str(patient.id),
+            "doc_type": "진단서",
+            "title": "차단 테스트",
+            "content": {"title": "진단서"},
+            "generated_text": "차단",
+        },
+        headers=headers,
+    )
+    assert save_resp.status_code == 403

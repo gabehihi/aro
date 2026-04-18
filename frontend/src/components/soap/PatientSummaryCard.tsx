@@ -19,7 +19,7 @@ export function PatientSummaryCard() {
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2">
+      <CardContent className="space-y-1.5 px-3 pb-3">
         <div className="flex flex-wrap gap-1">
           <span className="text-xs text-gray-500 mr-1">만성질환:</span>
           {selectedPatient.chronic_diseases.length > 0 ? (

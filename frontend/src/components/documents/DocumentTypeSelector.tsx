@@ -7,6 +7,8 @@ const DOC_TYPES: { value: DocType; label: string; description: string }[] = [
   { value: "확인서", label: "진료확인서", description: "내원일, 방문 횟수, 진단명" },
   { value: "의뢰서", label: "진료의뢰서", description: "의뢰 사유, 임상 요약, 요청 검사" },
   { value: "건강진단서", label: "건강진단서", description: "채용용 건강진단 결과" },
+  { value: "검사결과안내서", label: "검사결과안내서", description: "이상 결과 요약과 추후 권고" },
+  { value: "교육문서", label: "교육문서", description: "질환별 생활관리 및 복약 교육" },
 ]
 
 interface Props {
@@ -18,7 +20,7 @@ export function DocumentTypeSelector({ selected, onSelect }: Props) {
   return (
     <div className="space-y-2">
       <h3 className="text-sm font-medium text-gray-700">문서 유형 선택</h3>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-4">
         {DOC_TYPES.map((dt) => (
           <Card
             key={dt.value}

@@ -18,6 +18,9 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), nullable=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     personal_codebook: Mapped[dict | None] = mapped_column(JSON, nullable=True, default=None)
+    clinic_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    clinic_address: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    clinic_phone: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )

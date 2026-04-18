@@ -22,7 +22,7 @@ export function DocumentEditor({ value, onChange }: Props) {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={12}
-          className="w-full rounded border border-gray-300 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full max-h-96 resize-y overflow-y-auto rounded border border-gray-300 p-3 text-sm leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           placeholder="생성된 문서를 편집할 수 있습니다. [의사 소견: ___] 부분을 채워주세요."
         />
         <p className="mt-1 text-xs text-gray-500">

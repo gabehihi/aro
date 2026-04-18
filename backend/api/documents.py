@@ -2,7 +2,7 @@
 
 import io
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, time, timedelta
 from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -14,7 +14,7 @@ from core.audit import log_action
 from core.database import get_db
 from core.llm.service import LLMService
 from core.models.document import MedicalDocument
-from core.models.enums import DocStatus, DocType
+from core.models.enums import DocStatus, DocType, UserRole
 from core.models.patient import Patient
 from core.models.user import User
 from core.schemas.document import (
@@ -27,7 +27,7 @@ from core.schemas.document import (
     SourceDataRequest,
 )
 from core.schemas.encounter import LLMMetaSchema, WarningSchema
-from core.security import get_current_user
+from core.security import require_role
 from modules.documents.assembler import source_assembler
 from modules.documents.renderer import document_renderer
 from modules.documents.service import DocumentService
@@ -48,7 +48,7 @@ def _get_service() -> DocumentService:
 async def generate_document(
     body: DocumentGenerateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> DocumentGenerateResponse:
     """AI 문서 생성 미리보기 (저장하지 않음)."""
     service = _get_service()
@@ -79,7 +79,7 @@ async def generate_document(
 async def get_source_data(
     body: SourceDataRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> dict:
     """문서 생성에 사용될 원본 데이터 미리보기."""
     try:
@@ -101,7 +101,7 @@ async def get_source_data(
 async def save_document(
     body: DocumentSaveRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> DocumentResponse:
     """의사 확인 후 문서를 초안(draft) 상태로 저장."""
     doc = MedicalDocument(
@@ -123,15 +123,35 @@ async def save_document(
 @router.get("", response_model=DocumentListResponse)
 async def list_documents(
     patient_id: uuid.UUID | None = Query(default=None, description="환자 ID로 필터링"),
+    doc_status: DocStatus | None = Query(default=None, alias="status"),
+    doc_type: DocType | None = Query(default=None),
+    date_from: date | None = Query(default=None),
+    date_to: date | None = Query(default=None),
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> DocumentListResponse:
     """문서 목록 조회 (페이지네이션, 환자 ID 필터 선택)."""
+    del current_user
+    if date_from and date_to and date_from > date_to:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="date_from은 date_to보다 늦을 수 없습니다",
+        )
+
     base_where = []
     if patient_id is not None:
         base_where.append(MedicalDocument.patient_id == patient_id)
+    if doc_status is not None:
+        base_where.append(MedicalDocument.status == doc_status)
+    if doc_type is not None:
+        base_where.append(MedicalDocument.doc_type == doc_type)
+    if date_from is not None:
+        base_where.append(MedicalDocument.created_at >= datetime.combine(date_from, time.min))
+    if date_to is not None:
+        next_day = date_to + timedelta(days=1)
+        base_where.append(MedicalDocument.created_at < datetime.combine(next_day, time.min))
 
     total_q = select(func.count(MedicalDocument.id))
     if base_where:
@@ -158,7 +178,7 @@ async def list_documents(
 async def get_document(
     document_id: uuid.UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> DocumentResponse:
     """단일 문서 조회."""
     result = await db.execute(select(MedicalDocument).where(MedicalDocument.id == document_id))
@@ -176,7 +196,7 @@ async def update_document(
     document_id: uuid.UUID,
     body: DocumentUpdateRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> DocumentResponse:
     """문서 부분 수정 (제공된 필드만 업데이트)."""
     result = await db.execute(select(MedicalDocument).where(MedicalDocument.id == document_id))
@@ -201,7 +221,7 @@ async def issue_document(
     document_id: uuid.UUID,
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> DocumentResponse:
     """문서 발급 처리 (reviewed → issued 전환)."""
     result = await db.execute(select(MedicalDocument).where(MedicalDocument.id == document_id))
@@ -239,7 +259,7 @@ async def download_document(
     request: Request,
     format: str = Query(default="pdf", pattern="^(pdf|docx)$"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_role(UserRole.doctor, UserRole.nurse)),
 ) -> StreamingResponse:
     """문서 파일 다운로드 (PDF 또는 DOCX)."""
     doc_result = await db.execute(select(MedicalDocument).where(MedicalDocument.id == document_id))

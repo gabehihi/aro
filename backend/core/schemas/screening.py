@@ -79,10 +79,18 @@ class DashboardSummary(BaseModel):
     screening_incomplete: int
 
 
+class NoShowPatientResponse(BaseModel):
+    patient_id: UUID
+    patient_name: str
+    chart_no: str
+    scheduled_date: date
+    planned_tests: list[str]
+
+
 class FollowUpDashboardResponse(BaseModel):
     summary: DashboardSummary
     followup_alerts: list[FollowUpAlertResponse]
-    noshow_patients: list[dict]
+    noshow_patients: list[NoShowPatientResponse]
 
 
 class BulkUploadRow(BaseModel):

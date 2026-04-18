@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
+import { updateMe } from "@/api/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/hooks/useAuth"
-
-const STORAGE_KEY = "aro_settings"
 
 interface ClinicSettings {
   clinicName: string
@@ -22,19 +21,24 @@ const DEFAULT_SETTINGS: ClinicSettings = {
 
 export default function SettingsPage() {
   const user = useAuth((s) => s.user)
+  const setUser = useAuth((s) => s.setUser)
   const [settings, setSettings] = useState<ClinicSettings>(DEFAULT_SETTINGS)
   const [saved, setSaved] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        setSettings(JSON.parse(stored))
-      } catch {
-        // 파싱 실패 시 기본값 유지
-      }
+    if (!user) {
+      setSettings(DEFAULT_SETTINGS)
+      return
     }
-  }, [])
+    setSettings({
+      clinicName: user.clinic_name ?? "",
+      doctorName: user.name ?? "",
+      clinicAddress: user.clinic_address ?? "",
+      clinicPhone: user.clinic_phone ?? "",
+    })
+  }, [user])
 
   function handleChange(field: keyof ClinicSettings) {
     return (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -42,10 +46,26 @@ export default function SettingsPage() {
     }
   }
 
-  function handleSave() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2000)
+  async function handleSave() {
+    if (!user) return
+
+    setIsSaving(true)
+    setError(null)
+    try {
+      const updated = await updateMe({
+        name: settings.doctorName.trim(),
+        clinic_name: settings.clinicName.trim() || undefined,
+        clinic_address: settings.clinicAddress.trim() || undefined,
+        clinic_phone: settings.clinicPhone.trim() || undefined,
+      })
+      setUser(updated)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2000)
+    } catch {
+      setError("설정을 저장하지 못했습니다.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -58,6 +78,11 @@ export default function SettingsPage() {
           <CardTitle className="text-lg">의원 정보</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {error && (
+            <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <div className="space-y-1">
             <label className="text-sm font-medium text-gray-700">
               의원/보건소 이름
@@ -98,8 +123,8 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex items-center gap-3 pt-2">
-            <Button onClick={handleSave}>
-              {saved ? "저장되었습니다 ✓" : "저장"}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? "저장 중..." : saved ? "저장되었습니다 ✓" : "저장"}
             </Button>
             {saved && (
               <span className="text-sm text-green-600">
@@ -109,8 +134,8 @@ export default function SettingsPage() {
           </div>
 
           <p className="text-xs text-gray-500 pt-1">
-            이 설정은 브라우저 로컬 저장소에 저장됩니다. 의원명은 문서 발급
-            시 사용됩니다.
+            이 설정은 현재 로그인한 계정에 저장되며, 보고서와 문서 기본 정보에
+            사용됩니다.
           </p>
         </CardContent>
       </Card>

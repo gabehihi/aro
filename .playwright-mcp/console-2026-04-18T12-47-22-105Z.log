@@ -1,0 +1,34 @@
+[      70ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:14337
+[   31277ms] [ERROR] The result of getSnapshot should be cached to avoid an infinite loop @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:4537
+[   31294ms] Error: Maximum update depth exceeded. This can happen when a component repeatedly calls setState inside componentWillUpdate or componentDidUpdate. React limits the number of nested updates to prevent infinite loops.
+    at getRootForUpdatedFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:2633:166)
+    at enqueueConcurrentRenderForLane (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:2623:11)
+    at forceStoreRerender (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:4581:15)
+    at updateStoreInstance (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:4563:36)
+    at Object.react_stack_bottom_frame (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:12904:13)
+    at runWithFiberInDEV (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:851:66)
+    at commitHookEffectListMount (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:6617:153)
+    at commitHookPassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:6652:55)
+    at commitPassiveMountOnFiber (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:7618:22)
+    at recursivelyTraversePassiveMountEffects (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:7606:5)
+[   31294ms] [WARNING] %s
+
+%s
+ An error occurred in the <SaveEncounterButton> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:5257
+[  227035ms] ReferenceError: getKCDCodesForSave is not defined
+    at http://localhost:5173/src/hooks/useSoapSelectors.ts?t=1776516669021:34:44
+    at http://localhost:5173/node_modules/.vite/deps/zustand_shallow.js?v=8266c863:41:16
+    at http://localhost:5173/node_modules/.vite/deps/zustand.js?v=8266c863:36:96
+    at mountSyncExternalStore (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:4515:20)
+    at Object.useSyncExternalStore (http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:13073:12)
+    at exports.useSyncExternalStore (http://localhost:5173/node_modules/.vite/deps/react.js?v=8266c863:751:31)
+    at useStore (http://localhost:5173/node_modules/.vite/deps/zustand.js?v=8266c863:36:29)
+    at useBoundStore (http://localhost:5173/node_modules/.vite/deps/zustand.js?v=8266c863:42:38)
+    at useKCDCodesForSave (http://localhost:5173/src/hooks/useSoapSelectors.ts?t=1776516669021:34:9)
+    at SaveEncounterButton (http://localhost:5173/src/components/soap/SaveEncounterButton.tsx?t=1776516669021:137:19)
+[  227035ms] [WARNING] %s
+
+%s
+ An error occurred in the <SaveEncounterButton> component. Consider adding an error boundary to your tree to customize error handling behavior.
+Visit https://react.dev/link/error-boundaries to learn more about error boundaries. @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=8266c863:5257

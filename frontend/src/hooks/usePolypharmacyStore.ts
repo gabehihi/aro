@@ -22,6 +22,7 @@ interface PolypharmacyState {
   setReport: (r: PolypharmacyReport | null) => void
   setIsReviewing: (v: boolean) => void
   setError: (e: string | null) => void
+  clearReport: () => void
   reset: () => void
 }
 
@@ -66,5 +67,6 @@ export const usePolypharmacyStore = create<PolypharmacyState>((set) => ({
   setReport: (r) => set({ report: r }),
   setIsReviewing: (v) => set({ isReviewing: v }),
   setError: (e) => set({ error: e }),
+  clearReport: () => set({ report: null, error: null }),
   reset: () => set(initialState),
 }))

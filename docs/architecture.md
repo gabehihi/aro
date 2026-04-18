@@ -4,7 +4,7 @@
 
 ```
 aro Web Application
-├── Module 1: SOAP Writer         — 속기 입력 → SOAP 변환 (Claude Sonnet)
+├── Module 1: SOAP Writer         — 만성 9종/급성 증상 기반 템플릿 (AI 미사용)
 ├── Module 2: Polypharmacy Review — DDI 검출, 신기능 용량 조절, Sick Day Rules
 ├── Module 3: Document Automation — 진단서/의뢰서 등 4중 검증 자동 생성
 ├── Module 4: Screening & F/U    — 검진 추적, 리마인더, 교육 문서, 대시보드
@@ -47,20 +47,18 @@ aro/
 │   │   │   └── audit_log.py
 │   │   ├── schemas/             # Pydantic 요청/응답
 │   │   │   ├── patient.py
-│   │   │   ├── encounter.py     # SOAPRequest/Response
+│   │   │   ├── encounter.py     # EncounterCreate/Response + SOAPPrefillResponse
 │   │   │   └── codebook.py
 │   │   └── llm/                 # LLM 엔진
 │   │       ├── service.py       # LLMService (Claude API 래퍼)
 │   │       └── guards.py        # HallucinationGuard, SubjectiveFilter
 │   │
 │   ├── modules/                 # 기능 모듈
-│   │   ├── soap/                # ✅ Phase 1 구현 완료
-│   │   │   ├── service.py       # SOAPService.convert()
-│   │   │   ├── codebook.py      # 3-Layer 코드북 (builtin>institution>personal)
-│   │   │   ├── vitals.py        # 정규식 활력징후 추출
-│   │   │   ├── parser.py        # LLM 응답 파싱
-│   │   │   ├── sick_day.py      # Sick Day 감지
-│   │   │   └── prompts.py       # 시스템/동적 프롬프트
+│   │   ├── soap/                # ✅ 템플릿 기반 재설계 (2026-04-18)
+│   │   │   ├── codebook.py      # 3-Layer 코드북 (polypharmacy/documents 공용)
+│   │   │   ├── vitals.py        # 정규식 활력징후 추출 (documents가 참조)
+│   │   │   └── sick_day.py      # Sick Day 감지 (polypharmacy가 참조)
+│   │   │   # service.py/prompts.py/parser.py 삭제 — /soap-prefill만 제공
 │   │   ├── polypharmacy/        # 🔲 Phase 3
 │   │   ├── documents/           # 🔲 Phase 2
 │   │   └── screening/           # 🔲 Phase 4
@@ -68,7 +66,7 @@ aro/
 │   ├── api/                     # RESTful 엔드포인트
 │   │   ├── v1.py                # 라우터 통합
 │   │   ├── patients.py          # Patient CRUD
-│   │   ├── encounters.py        # SOAP convert + Encounter CRUD
+│   │   ├── encounters.py        # Encounter CRUD + GET /patients/{id}/soap-prefill
 │   │   └── codebook.py          # 약어 코드북 API
 │   │
 │   ├── alembic/                 # DB 마이그레이션
@@ -118,37 +116,37 @@ aro/
 
 ## 모듈 간 연동
 
-- **SOAP → Sick Day Alert**: SOAP 입력 시 sick_day.py가 키워드+활성 처방 교차 확인 → 자동 알림
-- **SOAP → 의뢰서**: SOAP 기록 → 문서자동화 모듈에서 내용 자동 참조
+- **이전 방문 → SOAP 프리필**: 환자 선택 시 직전 3 encounter를 스캔, KCD→DiseaseId 매핑·lab dedupe(180일)·health_promotion 복사
+- **SOAP → 문서/약물검토**: encounters.kcd_codes / vitals / labs JSON이 의뢰서·월간보고서·polypharmacy 입력으로 재사용됨
 - **검사 결과 → F/U 대시보드**: 검사 이상값 → 추적 알림 자동 감지
 
 ---
 
-## SOAP 변환 플로우 (Phase 1 구현)
+## SOAP 작성 플로우 (템플릿 재설계, 2026-04-18)
 
 ```
-의사 속기 입력
+환자 검색 → 선택
     ↓
-[1] 정규식 활력징후 추출 (vitals.py)
+[1] GET /patients/{id}/soap-prefill
+    → 최근 3 encounter → kcd_codes → DiseaseId 매핑 (I10→HTN, E11.9→DM, …)
+    → latest vitals + labs_by_name(180일 컷) + health_promotion 복사
     ↓
-[2] 3-Layer 코드북으로 약어 해석 컨텍스트 구성 (codebook.py)
+[2] useSoapStore.applyPrefill() → raw state 세팅
     ↓
-[3] 프롬프트 빌드: cached_system (시스템+코드북) + dynamic_system (환자 컨텍스트)
+[3] (만성 탭) DiseasePicker 토글 / VitalsInputCard / 질환별 섹션 입력
+    (급성 탭) SymptomSelector ± 토글 → CC 지정 + OnsetInput
     ↓
-[4] Claude Sonnet 4.6 → SOAP JSON (prompts.py → service.py)
+[4] useSoapSelectors — 순수 함수가 raw state → S/O/A/P 한국어 문자열 조립
+    → manualOverrides 존재 시 수기 편집 우선 (텍스트 편집 보존)
     ↓
-[5] LLM 응답 파싱 + JSON 복구 (parser.py)
+[5] SOAPPreviewPane 4 textarea 즉시 재렌더 → CopyButton으로 EMR 붙여넣기
     ↓
-[6] Hallucination Guard: vitals 교차검증, 범위 검증, 미언급 진단/검사 감지 (guards.py)
-    ↓
-[7] 주관적 표현 필터: ~30개 한국어 패턴 스캔 (guards.py)
-    ↓
-[8] Sick Day 감지: 키워드 → 활성 처방 교차 → HOLD/REDUCE/MONITOR (sick_day.py)
-    ↓
-[9] SOAPResult 반환 → 의사 미리보기/편집 (Human-in-the-loop)
-    ↓
-[10] 의사 확인 → POST /encounters → DB 저장
+[6] SaveEncounterButton → POST /encounters
+    raw_input = "TEMPLATE_V1|{mode,chronic,acute,overrides}" (감사 추적)
+    kcd_codes = 선택된 DiseaseId → canonical KCD union
 ```
+
+AI 호출 없음. 모든 템플릿은 `frontend/src/utils/soap/` 순수 함수 (Vitest 55 tests).
 
 ---
 

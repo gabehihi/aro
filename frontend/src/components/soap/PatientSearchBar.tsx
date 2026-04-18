@@ -7,6 +7,7 @@ import type { Patient } from "@/types"
 
 export function PatientSearchBar() {
   const { selectedPatient, setSelectedPatient } = useSoapStore()
+  const hasUserEdits = useSoapStore((s) => s.hasUserEdits)
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<Patient[]>([])
   const [isOpen, setIsOpen] = useState(false)
@@ -53,6 +54,12 @@ export function PatientSearchBar() {
   }
 
   function handleClear() {
+    if (
+      hasUserEdits &&
+      !window.confirm("현재 작성 중인 SOAP 입력이 사라집니다. 환자 선택을 해제할까요?")
+    ) {
+      return
+    }
     setSelectedPatient(null)
     setQuery("")
   }

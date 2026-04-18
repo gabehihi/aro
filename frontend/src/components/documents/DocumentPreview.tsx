@@ -22,7 +22,7 @@ export function DocumentPreview({ generatedText, warnings }: Props) {
         </CardTitle>
       </CardHeader>
       <CardContent className="p-3 pt-0">
-        <div className="whitespace-pre-wrap rounded border bg-white p-4 text-sm leading-relaxed">
+        <div className="max-h-96 overflow-y-auto whitespace-pre-wrap rounded border bg-white p-4 text-sm leading-relaxed">
           {generatedText.split("\n").map((line, i) => {
             const hasSubjective = subjectiveLocations.length > 0 && warnings.some(
               (w) => w.type === "subjective_expression" && line.includes(w.message.split("'")[1] ?? "")

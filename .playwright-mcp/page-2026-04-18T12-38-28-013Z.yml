@@ -1,0 +1,113 @@
+- generic [ref=e17]:
+  - complementary [ref=e18]:
+    - img "aro" [ref=e20]
+    - navigation [ref=e21]:
+      - link "대시보드" [ref=e22] [cursor=pointer]:
+        - /url: /
+        - img [ref=e23]
+        - text: 대시보드
+      - link "SOAP 작성" [ref=e28] [cursor=pointer]:
+        - /url: /soap
+        - img [ref=e29]
+        - text: SOAP 작성
+      - link "약물 검토" [ref=e32] [cursor=pointer]:
+        - /url: /drugs
+        - img [ref=e33]
+        - text: 약물 검토
+      - link "검진 추적" [ref=e36] [cursor=pointer]:
+        - /url: /screening
+        - img [ref=e37]
+        - text: 검진 추적
+      - link "문서 발급" [ref=e39] [cursor=pointer]:
+        - /url: /documents
+        - img [ref=e40]
+        - text: 문서 발급
+      - link "환자 관리" [ref=e45] [cursor=pointer]:
+        - /url: /patients
+        - img [ref=e46]
+        - text: 환자 관리
+    - paragraph [ref=e52]: aro v0.1.0
+  - generic [ref=e53]:
+    - banner [ref=e54]:
+      - generic [ref=e55]:
+        - generic [ref=e56]: 김내과
+        - generic [ref=e57]: 의사
+        - button "로그아웃" [ref=e58]:
+          - img
+          - text: 로그아웃
+    - main [ref=e59]:
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - generic [ref=e62]:
+            - heading "대시보드" [level=1] [ref=e63]
+            - paragraph [ref=e64]: 김내과님, 보건소의 오늘 운영 현황입니다.
+          - button "이번달 PDF" [ref=e65]:
+            - img
+            - text: 이번달 PDF
+        - generic [ref=e66]:
+          - generic [ref=e67]:
+            - generic [ref=e68]:
+              - generic [ref=e69]: 오늘 예약
+              - img [ref=e71]
+            - generic [ref=e74]: "0"
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - generic [ref=e77]: F/U 필요
+              - img [ref=e79]
+            - generic [ref=e82]: "0"
+          - generic [ref=e83]:
+            - generic [ref=e84]:
+              - generic [ref=e85]: 미내원 (지난주)
+              - img [ref=e87]
+            - generic [ref=e92]: "0"
+          - generic [ref=e93]:
+            - generic [ref=e94]:
+              - generic [ref=e95]: 검진 미수검
+              - img [ref=e97]
+            - generic [ref=e102]: "0"
+        - generic [ref=e103]:
+          - generic [ref=e105]: 이번달 활동 요약
+          - generic [ref=e106]:
+            - generic [ref=e107]:
+              - generic [ref=e108]:
+                - paragraph [ref=e109]: 내원 기록
+                - img [ref=e110]
+              - paragraph [ref=e112]: 2건
+              - paragraph [ref=e113]: 누적 7건
+            - generic [ref=e114]:
+              - generic [ref=e115]:
+                - paragraph [ref=e116]: 문서 발급
+                - img [ref=e117]
+              - paragraph [ref=e122]: 1건
+              - paragraph [ref=e123]: issued 기준
+            - generic [ref=e124]:
+              - generic [ref=e125]:
+                - paragraph [ref=e126]: 검진 등록
+                - img [ref=e127]
+              - paragraph [ref=e131]: 0건
+              - paragraph [ref=e132]: 이상소견 0건
+            - generic [ref=e133]:
+              - generic [ref=e134]:
+                - paragraph [ref=e135]: F/U 해결률
+                - img [ref=e136]
+              - paragraph [ref=e138]: 0%
+              - paragraph [ref=e139]: 0/0건 해결
+        - generic [ref=e140]:
+          - generic [ref=e141]:
+            - generic [ref=e143]: 예정 내원
+            - generic [ref=e145]: 예정된 내원이 없습니다.
+          - generic [ref=e146]:
+            - generic [ref=e148]: 우선 확인 F/U
+            - generic [ref=e150]: 처리할 F/U 알림이 없습니다.
+        - generic [ref=e151]:
+          - generic [ref=e152]:
+            - generic [ref=e154]: 최근 문서
+            - generic [ref=e156]:
+              - generic [ref=e157]:
+                - paragraph [ref=e158]: 교육문서 - 박영수
+                - paragraph [ref=e159]: 박영수 (P-2024-001) · 교육문서
+                - paragraph [ref=e160]: 저장 2026-04-18 · 발급 2026-04-18
+              - generic [ref=e161]: issued
+          - generic [ref=e162]:
+            - generic [ref=e164]: 월간 보고서 아카이브
+            - generic [ref=e166]: 저장된 월간 보고서가 없습니다.

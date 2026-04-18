@@ -128,8 +128,8 @@ export function FollowUpDashboard() {
                   <span className="font-medium">{p.patient_name}</span>
                   <span className="ml-2 text-gray-400 text-xs">({p.chart_no})</span>
                   <p className="text-xs text-gray-500 mt-0.5">
-                    마지막 방문: {p.last_visit ?? "기록 없음"}
-                    {p.days_since_last_visit != null && ` (${p.days_since_last_visit}일 경과)`}
+                    예약일: {p.scheduled_date}
+                    {p.planned_tests.length > 0 && ` · ${p.planned_tests.join(", ")}`}
                   </p>
                 </div>
                 <Badge variant="destructive">미방문</Badge>
