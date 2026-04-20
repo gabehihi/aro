@@ -417,8 +417,19 @@ export interface PolypharmacyReviewRequest {
   patient_id?: string
   drug_inns?: string[]
   egfr?: number
+  crcl?: number
   clinical_flags?: string[]
   labs?: LabInput[]
+}
+
+export interface PolypharmacyPrefillData {
+  age: number | null
+  sex: string | null
+  weight_kg: number | null
+  height_cm: number | null
+  serum_cr: number | null
+  egfr: number | null
+  crcl: number | null
 }
 
 export interface DDIFinding {
@@ -433,7 +444,9 @@ export interface DDIFinding {
 
 export interface RenalRecommendation {
   drug_inn: string
-  egfr: number
+  egfr: number | null
+  crcl: number | null
+  dosing_basis: "eGFR" | "CrCl"
   recommendation: "FULL_DOSE" | "REDUCE" | "AVOID" | "CONTRAINDICATED" | "NOT_IN_DB"
   detail: string
   max_daily_dose: string | null
@@ -458,6 +471,7 @@ export interface PolypharmacyWarning {
 export interface PolypharmacyReport {
   drug_inns: string[]
   egfr: number | null
+  crcl: number | null
   ddi_findings: DDIFinding[]
   renal_recommendations: RenalRecommendation[]
   sick_day_alerts: PolypharmacySickDayAlert[]

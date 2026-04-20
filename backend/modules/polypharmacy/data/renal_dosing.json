@@ -2,6 +2,7 @@
   "metformin": {
     "generic_name_kr": "메트포르민",
     "atc_code": "A10BA02",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 60, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "2550mg", "detail": "정상 용량 사용 가능"},
       {"egfr_min": 45, "egfr_max": 60, "recommendation": "REDUCE", "max_daily_dose": "1500mg", "detail": "용량 감량 필요, 주의 모니터링"},
@@ -14,6 +15,7 @@
   "sitagliptin": {
     "generic_name_kr": "시타글립틴",
     "atc_code": "A10BH01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 45, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "100mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 45, "recommendation": "REDUCE", "max_daily_dose": "50mg", "detail": "용량 50mg으로 감량"},
@@ -25,6 +27,7 @@
   "empagliflozin": {
     "generic_name_kr": "엠파글리플로진",
     "atc_code": "A10BK03",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 20, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "10~25mg", "detail": "심부전/CKD 적응증 시 eGFR 20 이상에서 사용 가능"},
       {"egfr_min": null, "egfr_max": 20, "recommendation": "CONTRAINDICATED", "max_daily_dose": null, "detail": "혈당강하 효과 없음 + DKA 위험"}
@@ -35,6 +38,7 @@
   "dapagliflozin": {
     "generic_name_kr": "다파글리플로진",
     "atc_code": "A10BK01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 25, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "10mg", "detail": "CKD 적응증 시 eGFR 25 이상에서 사용 가능"},
       {"egfr_min": null, "egfr_max": 25, "recommendation": "CONTRAINDICATED", "max_daily_dose": null, "detail": "혈당강하 효과 없음"}
@@ -45,6 +49,7 @@
   "allopurinol": {
     "generic_name_kr": "알로퓨리놀",
     "atc_code": "M04AA01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 60, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "300mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 60, "recommendation": "REDUCE", "max_daily_dose": "200mg", "detail": "용량 감량 필요"},
@@ -57,6 +62,7 @@
   "colchicine": {
     "generic_name_kr": "콜히친",
     "atc_code": "M04AC01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 50, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "1.2mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 50, "recommendation": "REDUCE", "max_daily_dose": "0.6mg", "detail": "예방 용량 0.3mg/일"},
@@ -68,6 +74,7 @@
   "rivaroxaban": {
     "generic_name_kr": "리바록사반",
     "atc_code": "B01AF01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 50, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "적응증별 상이", "detail": "정상 용량 (AF: 20mg, DVT: 15~20mg)"},
       {"egfr_min": 15, "egfr_max": 50, "recommendation": "REDUCE", "max_daily_dose": "15mg", "detail": "AF 적응증 시 15mg/일로 감량"},
@@ -79,6 +86,7 @@
   "apixaban": {
     "generic_name_kr": "아픽사반",
     "atc_code": "B01AF02",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 25, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "10mg (초기) → 5mg", "detail": "기준 충족 시 정상 용량"},
       {"egfr_min": null, "egfr_max": 25, "recommendation": "AVOID", "max_daily_dose": null, "detail": "데이터 부족으로 권고 어려움"}
@@ -89,6 +97,7 @@
   "gabapentin": {
     "generic_name_kr": "가바펜틴",
     "atc_code": "N03AX12",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 60, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "3600mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 60, "recommendation": "REDUCE", "max_daily_dose": "1400mg", "detail": "최대 일일 용량 감량"},
@@ -101,6 +110,7 @@
   "pregabalin": {
     "generic_name_kr": "프레가발린",
     "atc_code": "N03AX16",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 60, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "600mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 60, "recommendation": "REDUCE", "max_daily_dose": "300mg", "detail": "50% 감량"},
@@ -113,6 +123,7 @@
   "digoxin": {
     "generic_name_kr": "디곡신",
     "atc_code": "C01AA05",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 60, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "0.25mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 60, "recommendation": "REDUCE", "max_daily_dose": "0.125mg", "detail": "용량 50% 감량"},
@@ -124,6 +135,7 @@
   "furosemide": {
     "generic_name_kr": "푸로세마이드",
     "atc_code": "C03CA01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 30, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "용량 개별화", "detail": "정상 용량. 신부전 시 고용량 필요할 수 있음"},
       {"egfr_min": null, "egfr_max": 30, "recommendation": "REDUCE", "max_daily_dose": null, "detail": "효과 감소. 용량 증량 필요. 전해질 모니터링 강화"}
@@ -134,6 +146,7 @@
   "spironolactone": {
     "generic_name_kr": "스피로놀락톤",
     "atc_code": "C03DA01",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 45, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "25~50mg", "detail": "정상 용량"},
       {"egfr_min": 30, "egfr_max": 45, "recommendation": "REDUCE", "max_daily_dose": "25mg", "detail": "K+ 밀착 모니터링"},
@@ -145,6 +158,7 @@
   "ramipril": {
     "generic_name_kr": "라미프릴",
     "atc_code": "C09AA05",
+    "dosing_basis": "eGFR",
     "dose_adjustments": [
       {"egfr_min": 30, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "10mg", "detail": "정상 용량. CKD에서 신보호 효과"},
       {"egfr_min": null, "egfr_max": 30, "recommendation": "REDUCE", "max_daily_dose": "2.5mg", "detail": "저용량 시작. K+/Cr 밀착 모니터링"}
@@ -155,10 +169,11 @@
   "ciprofloxacin": {
     "generic_name_kr": "시프로플록사신",
     "atc_code": "J01MA02",
+    "dosing_basis": "CrCl",
     "dose_adjustments": [
-      {"egfr_min": 50, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "1000mg (경구)", "detail": "정상 용량"},
-      {"egfr_min": 30, "egfr_max": 50, "recommendation": "REDUCE", "max_daily_dose": "750mg", "detail": "용량 감량"},
-      {"egfr_min": null, "egfr_max": 30, "recommendation": "REDUCE", "max_daily_dose": "500mg", "detail": "최소 유효 용량 사용"}
+      {"crcl_min": 50, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "1000mg (경구)", "detail": "정상 용량"},
+      {"crcl_min": 30, "crcl_max": 50, "recommendation": "REDUCE", "max_daily_dose": "750mg", "detail": "용량 감량"},
+      {"crcl_min": null, "crcl_max": 30, "recommendation": "REDUCE", "max_daily_dose": "500mg", "detail": "최소 유효 용량 사용"}
     ],
     "monitoring": ["Cr"],
     "source": "FDA label"
@@ -166,13 +181,86 @@
   "acyclovir": {
     "generic_name_kr": "아시클로버",
     "atc_code": "J05AB01",
+    "dosing_basis": "CrCl",
     "dose_adjustments": [
-      {"egfr_min": 50, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "적응증별", "detail": "정상 용량"},
-      {"egfr_min": 25, "egfr_max": 50, "recommendation": "REDUCE", "max_daily_dose": "감량", "detail": "용량 및 투여 간격 조정"},
-      {"egfr_min": 10, "egfr_max": 25, "recommendation": "REDUCE", "max_daily_dose": "감량", "detail": "추가 감량"},
-      {"egfr_min": null, "egfr_max": 10, "recommendation": "REDUCE", "max_daily_dose": "감량", "detail": "최소 용량, 투석 일정 고려"}
+      {"crcl_min": 50, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "적응증별", "detail": "정상 용량"},
+      {"crcl_min": 25, "crcl_max": 50, "recommendation": "REDUCE", "max_daily_dose": "감량", "detail": "용량 및 투여 간격 조정"},
+      {"crcl_min": 10, "crcl_max": 25, "recommendation": "REDUCE", "max_daily_dose": "감량", "detail": "추가 감량"},
+      {"crcl_min": null, "crcl_max": 10, "recommendation": "REDUCE", "max_daily_dose": "감량", "detail": "최소 용량, 투석 일정 고려"}
     ],
     "monitoring": ["Cr", "충분한 수분 섭취 확인"],
+    "source": "FDA label"
+  },
+  "levofloxacin": {
+    "generic_name_kr": "레보플록사신",
+    "atc_code": "J01MA12",
+    "dosing_basis": "CrCl",
+    "dose_adjustments": [
+      {"crcl_min": 50, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "500~750mg", "detail": "정상 용량"},
+      {"crcl_min": 20, "crcl_max": 50, "recommendation": "REDUCE", "max_daily_dose": "500mg 부하 후 250mg/24h", "detail": "500mg 초회 투여 후 250mg 매 24시간"},
+      {"crcl_min": 10, "crcl_max": 20, "recommendation": "REDUCE", "max_daily_dose": "500mg 부하 후 250mg/48h", "detail": "500mg 초회 투여 후 250mg 매 48시간"},
+      {"crcl_min": null, "crcl_max": 10, "recommendation": "REDUCE", "max_daily_dose": "500mg 부하 후 250mg/48h", "detail": "투석 환자 동일. 투석으로 제거 안 됨"}
+    ],
+    "monitoring": ["Cr", "QTc 연장 여부"],
+    "source": "FDA label, Sanford Guide 2024"
+  },
+  "amoxicillin-clavulanate": {
+    "generic_name_kr": "아목시실린/클라불란산",
+    "atc_code": "J01CR02",
+    "dosing_basis": "CrCl",
+    "dose_adjustments": [
+      {"crcl_min": 30, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "875/125mg q12h", "detail": "정상 용량"},
+      {"crcl_min": 10, "crcl_max": 30, "recommendation": "REDUCE", "max_daily_dose": "500/125mg q12h", "detail": "용량 및 간격 조정 (875mg 제형 사용 금지)"},
+      {"crcl_min": null, "crcl_max": 10, "recommendation": "REDUCE", "max_daily_dose": "500/125mg q24h", "detail": "용량 최대 감량. 혈액투석 시 투석 후 추가 투여"}
+    ],
+    "monitoring": ["Cr", "간기능"],
+    "source": "FDA label, Sanford Guide 2024"
+  },
+  "trimethoprim-sulfamethoxazole": {
+    "generic_name_kr": "트리메토프림/설파메톡사졸 (TMP-SMX)",
+    "atc_code": "J01EE01",
+    "dosing_basis": "CrCl",
+    "dose_adjustments": [
+      {"crcl_min": 30, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "1DS (160/800mg) q12h", "detail": "정상 용량"},
+      {"crcl_min": 15, "crcl_max": 30, "recommendation": "REDUCE", "max_daily_dose": "1DS q24h", "detail": "50% 감량 또는 1일 1회 투여"},
+      {"crcl_min": null, "crcl_max": 15, "recommendation": "AVOID", "max_daily_dose": null, "detail": "고칼륨혈증, 결정뇨 위험. 원칙적 금기"}
+    ],
+    "monitoring": ["Cr", "K+", "혈구 수치"],
+    "source": "FDA label, KDIGO 2024"
+  },
+  "nitrofurantoin": {
+    "generic_name_kr": "니트로푸란토인",
+    "atc_code": "J01XE01",
+    "dosing_basis": "CrCl",
+    "dose_adjustments": [
+      {"crcl_min": 45, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "100mg q6h (macrocrystal 100mg q12h)", "detail": "정상 용량. 요로감염 치료에 효과적"},
+      {"crcl_min": null, "crcl_max": 45, "recommendation": "CONTRAINDICATED", "max_daily_dose": null, "detail": "소변 내 약물 농도 불충분 + 말초신경병증 위험으로 금기"}
+    ],
+    "monitoring": ["Cr", "폐 독성 증상 (장기 사용 시)"],
+    "source": "EAU 요로감염 가이드라인 2023"
+  },
+  "vancomycin": {
+    "generic_name_kr": "반코마이신",
+    "atc_code": "J01XA01",
+    "dosing_basis": "CrCl",
+    "dose_adjustments": [
+      {"crcl_min": 70, "crcl_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "15~20mg/kg q8~12h", "detail": "정상 용량. TDM으로 AUC/MIC 400~600 목표"},
+      {"crcl_min": 40, "crcl_max": 70, "recommendation": "REDUCE", "max_daily_dose": "15~20mg/kg q12~24h", "detail": "투여 간격 연장. TDM 필수"},
+      {"crcl_min": 20, "crcl_max": 40, "recommendation": "REDUCE", "max_daily_dose": "15~20mg/kg q24~48h", "detail": "TDM으로 용량 조절. 신독성 주의"},
+      {"crcl_min": null, "crcl_max": 20, "recommendation": "REDUCE", "max_daily_dose": "TDM 기반 개별화", "detail": "TDM 필수. 투석 환자 별도 프로토콜 적용"}
+    ],
+    "monitoring": ["AUC/MIC (목표 400~600)", "Cr", "이독성 증상"],
+    "source": "ASHP/IDSA/SIDP Vancomycin TDM 가이드라인 2020"
+  },
+  "ceftriaxone": {
+    "generic_name_kr": "세프트리악손",
+    "atc_code": "J01DD04",
+    "dosing_basis": "eGFR",
+    "dose_adjustments": [
+      {"egfr_min": 10, "egfr_max": null, "recommendation": "FULL_DOSE", "max_daily_dose": "1~2g/day", "detail": "주로 담즙 배설로 신기능 저하 시에도 일반적으로 감량 불필요"},
+      {"egfr_min": null, "egfr_max": 10, "recommendation": "REDUCE", "max_daily_dose": "2g/day", "detail": "최대 2g/일 초과 금지. 투석 시 담즙-신장 배설 변화 가능"}
+    ],
+    "monitoring": ["Cr"],
     "source": "FDA label"
   }
 }

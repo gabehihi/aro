@@ -29,6 +29,7 @@ def _mock_report() -> PolypharmacyReport:
     return PolypharmacyReport(
         drug_inns=["warfarin", "ibuprofen"],
         egfr=65.0,
+        crcl=None,
         ddi_findings=[
             DDIFinding(
                 drug_a="warfarin",
@@ -107,6 +108,7 @@ async def test_review_empty_drug_list(client: AsyncClient, db_session: AsyncSess
         empty_report = PolypharmacyReport(
             drug_inns=[],
             egfr=None,
+            crcl=None,
             ddi_findings=[],
             renal_recommendations=[],
             sick_day_alerts=[],

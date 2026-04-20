@@ -6,6 +6,7 @@ interface PolypharmacyState {
   selectedPatient: Patient | null
   drugInns: string[]
   egfr: string
+  crcl: string
   clinicalFlags: string[]
   labs: LabInput[]
   report: PolypharmacyReport | null
@@ -18,6 +19,7 @@ interface PolypharmacyState {
   addDrugInn: (inn: string) => void
   removeDrugInn: (inn: string) => void
   setEgfr: (v: string) => void
+  setCrcl: (v: string) => void
   toggleClinicalFlag: (flag: string) => void
   setReport: (r: PolypharmacyReport | null) => void
   setIsReviewing: (v: boolean) => void
@@ -30,6 +32,7 @@ const initialState = {
   selectedPatient: null as Patient | null,
   drugInns: [] as string[],
   egfr: "",
+  crcl: "",
   clinicalFlags: [] as string[],
   labs: [] as LabInput[],
   report: null as PolypharmacyReport | null,
@@ -41,7 +44,7 @@ export const usePolypharmacyStore = create<PolypharmacyState>((set) => ({
   ...initialState,
 
   setSelectedPatient: (patient) =>
-    set({ selectedPatient: patient, report: null, drugInns: [], error: null }),
+    set({ selectedPatient: patient, report: null, drugInns: [], egfr: "", crcl: "", error: null }),
 
   setDrugInns: (inns) => set({ drugInns: inns }),
 
@@ -56,6 +59,7 @@ export const usePolypharmacyStore = create<PolypharmacyState>((set) => ({
     set((state) => ({ drugInns: state.drugInns.filter((d) => d !== inn) })),
 
   setEgfr: (v) => set({ egfr: v }),
+  setCrcl: (v) => set({ crcl: v }),
 
   toggleClinicalFlag: (flag) =>
     set((state) => ({

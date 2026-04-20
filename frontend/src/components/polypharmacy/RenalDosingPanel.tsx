@@ -13,20 +13,28 @@ const REC_CONFIG = {
 interface Props {
   recommendations: RenalRecommendation[]
   egfr: number | null
+  crcl?: number | null
 }
 
-export function RenalDosingPanel({ recommendations, egfr }: Props) {
+export function RenalDosingPanel({ recommendations, egfr, crcl }: Props) {
   if (recommendations.length === 0) return null
 
   const flagged = recommendations.filter((r) => r.recommendation !== "FULL_DOSE")
+
+  const metricLabel = (() => {
+    const parts: string[] = []
+    if (egfr !== null && egfr !== undefined) parts.push(`eGFR ${egfr}`)
+    if (crcl !== null && crcl !== undefined) parts.push(`CrCl ${crcl}`)
+    return parts.length > 0 ? `(${parts.join(", ")})` : ""
+  })()
 
   return (
     <Card>
       <CardHeader className="p-3">
         <CardTitle className="text-sm">
           신기능 용량 조절
-          {egfr !== null && (
-            <span className="ml-2 text-xs font-normal text-gray-500">(eGFR {egfr})</span>
+          {metricLabel && (
+            <span className="ml-2 text-xs font-normal text-gray-500">{metricLabel}</span>
           )}
         </CardTitle>
       </CardHeader>
@@ -38,9 +46,12 @@ export function RenalDosingPanel({ recommendations, egfr }: Props) {
             const cfg = REC_CONFIG[r.recommendation] ?? REC_CONFIG.NOT_IN_DB
             return (
               <div key={r.drug_inn} className="border rounded p-2 space-y-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-sm font-medium">{r.drug_inn}</span>
                   <Badge className={`text-xs ${cfg.color}`}>{cfg.label}</Badge>
+                  <Badge variant="outline" className="text-xs text-gray-500">
+                    {r.dosing_basis === "CrCl" ? "CrCl 기준" : "eGFR 기준"}
+                  </Badge>
                   {r.max_daily_dose && (
                     <span className="text-xs text-gray-600 ml-auto">최대 {r.max_daily_dose}</span>
                   )}

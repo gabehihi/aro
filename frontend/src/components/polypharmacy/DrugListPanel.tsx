@@ -17,10 +17,12 @@ const CLINICAL_FLAGS = [
 interface Props {
   drugInns: string[]
   egfr: string
+  crcl: string
   clinicalFlags: string[]
   onAddDrug: (inn: string) => void
   onRemoveDrug: (inn: string) => void
   onEgfrChange: (v: string) => void
+  onCrclChange: (v: string) => void
   onToggleFlag: (flag: string) => void
   onReview: () => void
   isReviewing: boolean
@@ -29,10 +31,12 @@ interface Props {
 export function DrugListPanel({
   drugInns,
   egfr,
+  crcl,
   clinicalFlags,
   onAddDrug,
   onRemoveDrug,
   onEgfrChange,
+  onCrclChange,
   onToggleFlag,
   onReview,
   isReviewing,
@@ -87,20 +91,38 @@ export function DrugListPanel({
 
       <Card>
         <CardHeader className="p-3">
-          <CardTitle className="text-sm">신기능 (eGFR)</CardTitle>
+          <CardTitle className="text-sm">신기능</CardTitle>
         </CardHeader>
-        <CardContent className="p-3 pt-0">
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              value={egfr}
-              onChange={(e) => onEgfrChange(e.target.value)}
-              placeholder="예: 65"
-              className="w-28 text-sm"
-            />
-            <span className="text-sm text-gray-500">mL/min/1.73m²</span>
+        <CardContent className="p-3 pt-0 space-y-3">
+          <div>
+            <p className="text-xs text-gray-500 mb-1">eGFR (CKD-EPI)</p>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={egfr}
+                onChange={(e) => onEgfrChange(e.target.value)}
+                placeholder="예: 65"
+                className="w-28 text-sm"
+              />
+              <span className="text-xs text-gray-500">mL/min/1.73m²</span>
+            </div>
           </div>
-          <p className="text-xs text-gray-400 mt-1">미입력 시 신기능 용량 조절 생략</p>
+          <div>
+            <p className="text-xs text-gray-500 mb-1">CrCl (Cockcroft-Gault)</p>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={crcl}
+                onChange={(e) => onCrclChange(e.target.value)}
+                placeholder="예: 55"
+                className="w-28 text-sm"
+              />
+              <span className="text-xs text-gray-500">mL/min</span>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400">
+            항생제·FDA PI 기반 약물은 CrCl 사용 · KDIGO/CKD 기반 약물은 eGFR 사용
+          </p>
         </CardContent>
       </Card>
 
