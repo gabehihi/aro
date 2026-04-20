@@ -7,9 +7,7 @@ import { VisitTypeSelector } from "@/components/soap/VisitTypeSelector"
 import { SaveEncounterButton } from "@/components/soap/SaveEncounterButton"
 import { ClinicalDashboard } from "@/components/soap/ClinicalDashboard"
 import { DiseasePicker } from "@/components/soap/chronic/DiseasePicker"
-import { VitalsInputCard } from "@/components/soap/chronic/VitalsInputCard"
 import { DiseaseSections } from "@/components/soap/chronic/DiseaseSections"
-import { AdditionalLabsCard } from "@/components/soap/chronic/AdditionalLabsCard"
 import { EducationChecklist } from "@/components/soap/chronic/EducationChecklist"
 import { SymptomSelector } from "@/components/soap/acute/SymptomSelector"
 import { OnsetInput } from "@/components/soap/acute/OnsetInput"
@@ -38,6 +36,9 @@ export function SOAPWriter() {
 
   // Ref that SOAPPreviewPane registers its openPopup callback into
   const previewOpenerRef = useRef<(() => void) | null>(null)
+
+  // Track previous patient ID for auto-open popup
+  const prevPatientIdRef = useRef<string | null>(null)
 
   async function handleReapplyPrefill() {
     if (!selectedPatient) return
@@ -90,6 +91,18 @@ export function SOAPWriter() {
       cancelled = true
     }
   }, [selectedPatient, applyPrefill, setIsPrefilling, setError, setLastEncounterDate])
+
+  // 환자 선택 시 복붙 창 자동 오픈
+  useEffect(() => {
+    if (selectedPatient && selectedPatient.id !== prevPatientIdRef.current) {
+      prevPatientIdRef.current = selectedPatient.id
+      // Small delay so popup fires after user click propagation
+      setTimeout(() => previewOpenerRef.current?.(), 50)
+    }
+    if (!selectedPatient) {
+      prevPatientIdRef.current = null
+    }
+  }, [selectedPatient])
 
   return (
     <div className="space-y-3">
@@ -160,9 +173,7 @@ export function SOAPWriter() {
             </TabsList>
             <TabsContent value="chronic" className="space-y-3 pt-3">
               <DiseasePicker />
-              <VitalsInputCard />
               <DiseaseSections />
-              <AdditionalLabsCard />
               <EducationChecklist />
             </TabsContent>
             <TabsContent value="acute" className="space-y-3 pt-3">

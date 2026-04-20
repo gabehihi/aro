@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSoapStore } from "@/hooks/useSoapStore"
+import { LabHint } from "./LabHint"
 import { SectionShell } from "./SectionShell"
 
 export function MASLDSection() {
@@ -19,6 +20,7 @@ export function MASLDSection() {
             value={labs.ast}
             onChange={(e) => updateLabs({ ast: e.target.value })}
           />
+          <LabHint labKey="ast" onLoad={(v) => updateLabs({ ast: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">ALT</Label>
@@ -27,6 +29,7 @@ export function MASLDSection() {
             value={labs.alt}
             onChange={(e) => updateLabs({ alt: e.target.value })}
           />
+          <LabHint labKey="alt" onLoad={(v) => updateLabs({ alt: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">GGT</Label>
@@ -35,6 +38,7 @@ export function MASLDSection() {
             value={labs.ggt}
             onChange={(e) => updateLabs({ ggt: e.target.value })}
           />
+          <LabHint labKey="ggt" onLoad={(v) => updateLabs({ ggt: v })} />
         </div>
       </div>
       <div>

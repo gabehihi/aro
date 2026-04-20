@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSoapStore } from "@/hooks/useSoapStore"
+import { LabHint } from "./LabHint"
 import { SectionShell } from "./SectionShell"
 
 interface Props {
@@ -29,6 +30,7 @@ export function ThyroidSection({ variant }: Props) {
             value={labs.tsh}
             onChange={(e) => updateLabs({ tsh: e.target.value })}
           />
+          <LabHint labKey="tsh" onLoad={(v) => updateLabs({ tsh: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">fT4</Label>
@@ -37,6 +39,7 @@ export function ThyroidSection({ variant }: Props) {
             value={labs.ft4}
             onChange={(e) => updateLabs({ ft4: e.target.value })}
           />
+          <LabHint labKey="ft4" onLoad={(v) => updateLabs({ ft4: v })} />
         </div>
       </div>
       <div>

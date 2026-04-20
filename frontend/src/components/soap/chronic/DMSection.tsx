@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSoapStore } from "@/hooks/useSoapStore"
+import { LabHint } from "./LabHint"
 import { SectionShell, ToggleLabel } from "./SectionShell"
 
 function todayISO(): string {
@@ -39,6 +40,7 @@ export function DMSection() {
             value={labs.hba1c}
             onChange={(e) => updateLabs({ hba1c: e.target.value })}
           />
+          <LabHint labKey="hba1c" onLoad={(v) => updateLabs({ hba1c: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">FBS (mg/dL)</Label>
@@ -47,6 +49,7 @@ export function DMSection() {
             value={labs.fbs}
             onChange={(e) => updateLabs({ fbs: e.target.value })}
           />
+          <LabHint labKey="fbs" onLoad={(v) => updateLabs({ fbs: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">PPG (mg/dL)</Label>

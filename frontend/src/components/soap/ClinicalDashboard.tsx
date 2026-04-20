@@ -3,6 +3,7 @@ import { AlertTriangle } from "lucide-react"
 import { getClinicalSummary } from "@/api/clinical"
 import { useSoapStore } from "@/hooks/useSoapStore"
 import { Badge } from "@/components/ui/badge"
+import { LabHistoryTable } from "./LabHistoryTable"
 import { MetricCards } from "./MetricCards"
 import { VitalTrendsChart } from "./VitalTrendsChart"
 import { PastVisitTimeline } from "./PastVisitTimeline"
@@ -28,6 +29,7 @@ export function ClinicalDashboard() {
   useEffect(() => {
     if (!selectedPatient) {
       setSummary(null)
+      useSoapStore.getState().setClinicalSummary(null)
       return
     }
 
@@ -36,7 +38,10 @@ export function ClinicalDashboard() {
 
     getClinicalSummary(selectedPatient.id)
       .then((data) => {
-        if (!cancelled) setSummary(data)
+        if (!cancelled) {
+          setSummary(data)
+          useSoapStore.getState().setClinicalSummary(data)
+        }
       })
       .catch(() => {
         if (!cancelled) setSummary(null)
@@ -108,6 +113,7 @@ export function ClinicalDashboard() {
       <MetricCards vitals={summary.recent_vitals} labs={summary.recent_labs} />
       <VitalTrendsChart vitals={summary.recent_vitals} />
       <PastVisitTimeline encounters={summary.recent_encounters} />
+      <LabHistoryTable recentLabs={summary.recent_labs} />
     </div>
   )
 }

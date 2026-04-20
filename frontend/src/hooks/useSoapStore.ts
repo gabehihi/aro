@@ -1,5 +1,5 @@
 import { create } from "zustand"
-import type { Patient, VisitType } from "@/types"
+import type { ClinicalSummary, Patient, VisitType } from "@/types"
 import type {
   AcuteState,
   ChronicState,
@@ -74,6 +74,9 @@ interface SoapState {
   clearManualOverride: (section: SoapSectionKey) => void
   clearAllOverrides: () => void
 
+  clinicalSummary: ClinicalSummary | null
+  setClinicalSummary: (s: ClinicalSummary | null) => void
+
   setIsSaving: (saving: boolean) => void
   setIsPrefilling: (loading: boolean) => void
   setError: (error: string | null) => void
@@ -109,6 +112,7 @@ const initialState: Pick<
   | "isPrefilling"
   | "error"
   | "lastEncounterDate"
+  | "clinicalSummary"
 > = {
   mode: "chronic",
   selectedPatient: null,
@@ -122,6 +126,7 @@ const initialState: Pick<
   isPrefilling: false,
   error: null,
   lastEncounterDate: null,
+  clinicalSummary: null as ClinicalSummary | null,
 }
 
 function toVitalString(value: unknown): string {
@@ -165,6 +170,7 @@ export const useSoapStore = create<SoapState>((set) => ({
       hasUserEdits: false,
       error: null,
       lastEncounterDate: null,
+      clinicalSummary: null,
     }),
   setVisitType: (type) => set({ visitType: type }),
   setActiveChronicDisease: (id) => set({ activeChronicDisease: id }),
@@ -363,6 +369,8 @@ export const useSoapStore = create<SoapState>((set) => ({
 
   clearAllOverrides: () =>
     set((state) => ({ manualOverrides: {}, hasUserEdits: state.hasUserEdits })),
+
+  setClinicalSummary: (s) => set({ clinicalSummary: s }),
 
   setIsSaving: (saving) => set({ isSaving: saving }),
   setIsPrefilling: (loading) => set({ isPrefilling: loading }),

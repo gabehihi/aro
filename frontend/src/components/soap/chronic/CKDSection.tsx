@@ -4,6 +4,7 @@ import { useSoapStore } from "@/hooks/useSoapStore"
 import { usePatientContext } from "@/hooks/useSoapSelectors"
 import { calcEGFR } from "@/utils/soap/egfr"
 import { getCKDStage } from "@/utils/soap/ckd-stage"
+import { LabHint } from "./LabHint"
 import { SectionShell, ToggleLabel } from "./SectionShell"
 
 export function CKDSection() {
@@ -27,6 +28,7 @@ export function CKDSection() {
             value={labs.cr}
             onChange={(e) => updateLabs({ cr: e.target.value })}
           />
+          <LabHint labKey="cr" onLoad={(v) => updateLabs({ cr: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">BUN (mg/dL)</Label>

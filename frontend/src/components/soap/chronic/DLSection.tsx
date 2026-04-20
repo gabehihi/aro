@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSoapStore } from "@/hooks/useSoapStore"
+import { LabHint } from "./LabHint"
 import { SectionShell, ToggleLabel } from "./SectionShell"
 
 function todayISO(): string {
@@ -39,6 +40,7 @@ export function DLSection() {
             value={labs.ldl}
             onChange={(e) => updateLabs({ ldl: e.target.value })}
           />
+          <LabHint labKey="ldl" onLoad={(v) => updateLabs({ ldl: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">HDL</Label>
@@ -47,6 +49,7 @@ export function DLSection() {
             value={labs.hdl}
             onChange={(e) => updateLabs({ hdl: e.target.value })}
           />
+          <LabHint labKey="hdl" onLoad={(v) => updateLabs({ hdl: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">TG</Label>
@@ -55,6 +58,7 @@ export function DLSection() {
             value={labs.tg}
             onChange={(e) => updateLabs({ tg: e.target.value })}
           />
+          <LabHint labKey="tg" onLoad={(v) => updateLabs({ tg: v })} />
         </div>
         <div>
           <Label className="text-xs text-gray-600">T-Chol</Label>
@@ -63,6 +67,7 @@ export function DLSection() {
             value={labs.tc}
             onChange={(e) => updateLabs({ tc: e.target.value })}
           />
+          <LabHint labKey="tc" onLoad={(v) => updateLabs({ tc: v })} />
         </div>
       </div>
       <ToggleLabel
